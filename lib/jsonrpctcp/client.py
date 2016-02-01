@@ -140,6 +140,8 @@ class Client(object):
             length = config.crypt_chunk_size
             pad_length = length - (len(message) % length)
             message = crypt.encrypt('%s%s' % (message, ' '*pad_length))
+        if config.append_string:
+            message += config.append_string
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(config.timeout)
         sock.connect(self._addr)

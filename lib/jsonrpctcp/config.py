@@ -31,6 +31,8 @@ class Config(object):
         self.crypt_chunk_size = 16
         # Maximum number of queued connections
         self.max_queue = 10
+        # Append string to the end of the message before send
+        self.append_string = None
     
     @classmethod
     def instance(cls):
