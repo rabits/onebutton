@@ -29,6 +29,12 @@ About display: to show some info about current state you can use number of optio
 
 Managing presets is carried out using Guitarix GUI interface or WEB interface. Later I think about preparing Qt+Bluetooth interface to manage everything.
 
+Additional features
+-------------------
+* Delayed actions
+* Switch without pause and clicking
+* No cut-off when swiching preset (for ex. delay & reverb processing last output)
+
 Reference hardware
 ------------------
 Right now I use the following hardware:
