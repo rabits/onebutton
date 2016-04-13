@@ -11,7 +11,7 @@ One footswitch can control each element in your stompbox, simple config for ex:
 Init (switch to Rythm preset & display "R" letter) --> Click (switch to Solo preset & show "Skull" animation) --> Click (goto Init)
 Init (Tuner off) --> Longpush (Tuner on & Mute output) --> Longpush (goto Init)
 ```
-For sure you can use any number of buttons that you wish.
+If you'd like to use additional buttons - just connect it (GPIO, USB, etc) and change hw configuration of pedal.
 
 And any action can be used as a part of step in this live graph:
 * Enable looper rec
@@ -27,7 +27,7 @@ About display: to show some info about current state you can use number of optio
 * Graphical display
 * Etc...
 
-Managing presets is carried out using Guitarix GUI interface or WEB interface. Later I think about preparing Qt+Bluetooth interface to manage everything.
+Managing presets is carried out using Guitarix GUI interface or WEB interface. Later I think about preparing Qt+Bluetooth interface to manage everything with your PC or smartphone.
 
 Additional features
 -------------------
@@ -38,9 +38,13 @@ Additional features
 Reference hardware
 ------------------
 Right now I use the following hardware:
-* ODROID-C1+
-* ESI Maya22 usb audio (connected to OTG, due to streaming issue with usb1.1 on odroid)
-* 8x8 RGB led matrix & Rainbowduino
+* Platform:
+  * ODROID-C1+
+  * ODROID-C2
+* Audio:
+  * ESI UGM96
+  * ESI Maya22
+* Rainbowduino 8x8 RGB led matrix
 * Momentary soft-touch footswitch
 * 3D printed case
 
@@ -48,8 +52,8 @@ But, you can ignore that, because RaspberryPI & any usb card with high-z input a
 
 Also GPIO is not required - just write small plugin python script and use any USB/UART/(interface)-driven buttons or controller for input/output interfaces.
 
-Support
--------
+Donation
+--------
 If you great R&R man, you can support my open-source development by a small Bitcoin donation.
 
 Bitcoin wallet: `15phQNwkVs3fXxvxzBkhuhXA2xoKikPfUy`
