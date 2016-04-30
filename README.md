@@ -31,9 +31,10 @@ Managing presets is carried out using Guitarix GUI interface or WEB interface. L
 
 Additional features
 -------------------
-* Delayed actions
-* Switch without pause and clicking
-* No cut-off when swiching preset (for ex. delay & reverb processing last output)
+* Flexible audio mapping - you can control multiple audio interfaces and manage effects for a number of instruments
+* Delayed actions - click and run sequence of actions with controllable delays
+* Switch presets without pause and clicking
+* No cut-off when swiching presets (for ex. delay & reverb processing last output)
 
 Reference hardware
 ------------------

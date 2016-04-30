@@ -1,0 +1,46 @@
+--- # Default onebutton configuration
+global:
+  dir:
+    logs: ~/.local/onebutton/logs
+
+buttons:
+  - name: Foot Switch
+    type: gpio
+    config:
+      pin: 98
+
+displays:
+  - name: RGB 8x8 Display
+    type: ttyusb
+    config:
+      dev: ttyUSB0
+
+jacks:
+  - name: ESI UGM96
+    type: alsa
+    config:
+      realtime: true
+      priority: 89
+      device: hw:1
+      samplerate: 44100
+      buffer: 128
+      period: 3
+
+guitarix:
+  - name: Guitar 1
+    rpc_port: 8881
+    mapping:
+      inputs:
+        - type: audio
+          dev: 0
+          in: 1
+        - type: audio
+          dev: 0
+          in: 2
+      outputs:
+        - type: audio
+          dev: 0
+          out: 1
+        - type: audio
+          dev: 0
+          out: 2

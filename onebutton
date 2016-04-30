@@ -1,0 +1,7 @@
+#!/bin/sh
+
+BASEDIR=$(dirname `readlink -f $0`)
+
+export PYTHONPATH=$BASEDIR/lib:$BASEDIR/src
+
+$BASEDIR/src/OneButton.py $@
