@@ -1,46 +1,45 @@
 --- # Default onebutton configuration
 global:
+  log:
+    verbose: Null # True - verbose, False - not verbose, Null - middle
   dir:
-    logs: ~/.local/onebutton/logs
+    logs: ~/.local/onebutton/logs # Used to place processes err & out logs
+    pids: ~/.local/onebutton/pids # Used to place processes pid files
 
-buttons:
-  - name: Foot Switch
+Button:
+  - name: FootSwitch
     type: gpio
     config:
       pin: 98
 
-displays:
-  - name: RGB 8x8 Display
+Display:
+  - name: RGB8x8Display
     type: ttyusb
     config:
       dev: ttyUSB0
 
-jacks:
-  - name: ESI UGM96
-    type: alsa
+Jack:
+  - name: esi-ugm96
+    type: alsa # Type of jackd driver
     config:
-      realtime: true
-      priority: 89
-      device: hw:1
+      rtpriority: 89 # Int or False to disable realtime mode
+      device: hw:1 # Alsa device to capture
       samplerate: 44100
       buffer: 128
-      period: 3
+      periods: 3
 
-guitarix:
-  - name: Guitar 1
-    rpc_port: 8881
+Guitarix:
+  - name: guitar1
+    rpc_port: 8881 # Port to handle by json-rpc
+    jack: esi-ugm96 # Connect to jackd with this name
     mapping:
       inputs:
         - type: audio
-          dev: 0
           in: 1
         - type: audio
-          dev: 0
           in: 2
       outputs:
         - type: audio
-          dev: 0
           out: 1
         - type: audio
-          dev: 0
           out: 2

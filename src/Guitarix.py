@@ -3,10 +3,24 @@
 
 from jsonrpctcp import config as JSONRPCConfig, connect as JSONRPCConnect
 
-class Guitarix(object):
-    def __init(self, config):
+from Log import debug, info, warn, error
+from Process import Process
+
+class Guitarix(Process):
+    """Guitarix controller"""
+
+    def start(self):
         JSONRPCConfig.append_string = '\n'
-        self._connection = JSONRPCConnect('localhost', 8888)
+        self._command = ['guitarix', '--nogui',
+                '--name', self._cfg['name'],
+                '--rpcport', self._cfg['rpc_port'],
+                '--server-name', self._cfg['jack']]
+        Process.start(self)
+
+    def _clientConnect(self):
+        info("Connecting Guitarix client '%s'" % self._cfg['name'])
+        self._client = JSONRPCConnect('localhost', self._cfg['rpc_port'])
+        self.version()
 
     def version(self):
-        return self._connection.getversion()
+        return self._client.getversion()

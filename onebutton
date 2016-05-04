@@ -3,5 +3,6 @@
 BASEDIR=$(dirname `readlink -f $0`)
 
 export PYTHONPATH=$BASEDIR/lib:$BASEDIR/src
+export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket
 
 $BASEDIR/src/OneButton.py $@
