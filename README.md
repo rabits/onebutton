@@ -53,6 +53,14 @@ But, you can ignore that, because RaspberryPI & any usb card with high-z input a
 
 Also GPIO is not required - just write small plugin python script and use any USB/UART/(interface)-driven buttons or controller for input/output interfaces.
 
+Installation
+------------
+* Prepare your system to use realtime settings: http://github.com/raboof/realtimeconfigquickscan
+* Clone onebutton repo
+* Change config.yaml to suit your HW configuration
+* Run `./onebutton config.yaml` and check logs that everything fine
+* Rock & Roll!
+
 Donation
 --------
 If you great R&R man, you can support my open-source development by a small Bitcoin donation.

@@ -36,7 +36,7 @@ class OneButton(object):
                 self._cfg = yaml.load(f.read())
                 info("Using configuration from '%s'" % f.name)
         except IOError:
-            warn("Unable to read config file '%s'" % path)
+            warn("Unable to read config file '%s'" % self._cfg_path)
 
         if self._cfg == None:
             raise Exception("Unable to read configuration")
