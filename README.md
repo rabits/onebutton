@@ -60,6 +60,7 @@ Installation
 * Change config.yaml to suit your HW configuration
 * Run `./onebutton config.yaml` and check logs that everything fine
 * Rock & Roll!
+* Optional: copy init script (upstart.conf) to run onebutton on system start
 
 Donation
 --------

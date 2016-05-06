@@ -35,11 +35,11 @@ class Jack(Process):
 
     def _jack_info_log(msg):
         self._logout.write("INFO: "+msg+"\n")
-        self._logout.flush()
+        #self._logout.flush()
 
     def _jack_error_log(msg):
         self._logerr.write("ERROR: "+msg+"\n")
-        self._logerr.flush()
+        #self._logerr.flush()
 
     def _clientConnect(self):
         info("Connecting Jack '%s'" % self._cfg['name'])

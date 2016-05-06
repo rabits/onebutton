@@ -1,5 +1,6 @@
 --- # Default onebutton configuration
 global:
+  daemon: True # Run as daemon (detach & save pid in pids dir and logs in log)
   log:
     verbose: Null # True - verbose, False - not verbose, Null - middle
   dir:

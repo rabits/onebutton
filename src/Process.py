@@ -29,7 +29,7 @@ class Process(object):
             self._command = [ str(i) for i in self._command ]
             debug("Executing %s with logs %s %s" % (self._command, self._logout.name, self._logerr.name))
             self._process = Popen(self._command, stdout=self._logout, stderr=self._logerr)
-            with file(self._pidpath, 'w') as f:
+            with open(self._pidpath, 'w') as f:
                 f.write(str(self._process.pid))
         else:
             warn("Unable to exec command '%s' to start process %s" % (self._command, self.__class__.__name__))
@@ -50,13 +50,13 @@ class Process(object):
                 except:
                     warn("Unable to gracefully stop the process %s (pid: %d)" % (self.__class__.__name__, pid))
                 else:
-                    with file(self._pidpath, 'w') as f:
+                    with open(self._pidpath, 'w') as f:
                         f.truncate()
             except Exception as e:
                 error("Exception durning stopping process: %s" % e)
 
         try:
-            with file(self._pidpath, 'r') as f:
+            with open(self._pidpath, 'r') as f:
                 pid = f.readline().strip()
                 if pid:
                     info("Killing %s instance" % self.__class__.__name__)
@@ -68,7 +68,7 @@ class Process(object):
         except:
             pass
 
-        with file(self._pidpath, 'w') as f:
+        with open(self._pidpath, 'w') as f:
             f.truncate()
 
     def _clientConnect(self):

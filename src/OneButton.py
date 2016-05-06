@@ -28,11 +28,13 @@ class OneButton(object):
         self._cfg_path = config_path
         self._loadConfig()
         self._checkConfig()
+        if self._cfg['global']['daemon']:
+            self._daemonize()
 
     def _loadConfig(self):
         self._cfg = None
         try:
-            with file(os.path.abspath(os.path.expanduser(self._cfg_path)), 'rb') as f:
+            with open(os.path.abspath(os.path.expanduser(self._cfg_path)), 'rb') as f:
                 self._cfg = yaml.load(f.read())
                 info("Using configuration from '%s'" % f.name)
         except IOError:
@@ -49,6 +51,41 @@ class OneButton(object):
                 info("Make directory '%s'" % self._dir[key])
                 os.makedirs(self._dir[key])
 
+    def _daemonize(self):
+        try:
+            pid = os.fork()
+            if pid > 0:
+                sys.exit(0)
+        except OSError, e:
+            error("Fork 1 filed: %d, %s" % (e.errno, e.strerror))
+
+        os.chdir("/")
+        os.setsid()
+        os.umask(0)
+
+        try:
+            pid = os.fork()
+            if pid > 0:
+                sys.exit(0)
+        except OSError, e:
+            error("Fork 2 filed: %d, %s" % (e.errno, e.strerror))
+
+        sys.stdout.flush()
+        sys.stderr.flush()
+        so = open(self._dir['logs']+'/OneButton.out.log', 'a', 0)
+        se = open(self._dir['logs']+'/OneButton.err.log', 'a', 0)
+        os.dup2(so.fileno(), sys.stdout.fileno())
+        os.dup2(se.fileno(), sys.stderr.fileno())
+
+        import atexit
+        atexit.register(self._delpid)
+        pid = str(os.getpid())
+        with open(self._dir['pids']+'/OneButton.pid', 'w') as f:
+            f.write(pid)
+
+    def _delpid(self):
+        os.remove(self._dir['pids']+'/OneButton.pid')
+
     def saveConfig(self):
         pass
 
@@ -57,8 +94,8 @@ class OneButton(object):
         self._processes[name] = []
         for i, cfg in enumerate(self._cfg[name]):
             self._processes[name].append(Class(cfg,
-                file(self._dir['logs']+'/%s_%d.out.log' % (name, i), 'w'),
-                file(self._dir['logs']+'/%s_%d.err.log' % (name, i), 'w'),
+                open(self._dir['logs']+'/%s_%d.out.log' % (name, i), 'w', 0),
+                open(self._dir['logs']+'/%s_%d.err.log' % (name, i), 'w', 0),
                 self._dir['pids']+'/%s_%d.pid' % (name, i)))
 
         info("Waiting till %s will be started..." % name)
