@@ -28,8 +28,6 @@ class OneButton(object):
         self._cfg_path = config_path
         self._loadConfig()
         self._checkConfig()
-        if self._cfg['global']['daemon']:
-            self._daemonize()
 
     def _loadConfig(self):
         self._cfg = None
@@ -51,41 +49,6 @@ class OneButton(object):
                 info("Make directory '%s'" % self._dir[key])
                 os.makedirs(self._dir[key])
 
-    def _daemonize(self):
-        try:
-            pid = os.fork()
-            if pid > 0:
-                sys.exit(0)
-        except OSError, e:
-            error("Fork 1 filed: %d, %s" % (e.errno, e.strerror))
-
-        os.chdir("/")
-        os.setsid()
-        os.umask(0)
-
-        try:
-            pid = os.fork()
-            if pid > 0:
-                sys.exit(0)
-        except OSError, e:
-            error("Fork 2 filed: %d, %s" % (e.errno, e.strerror))
-
-        sys.stdout.flush()
-        sys.stderr.flush()
-        so = open(self._dir['logs']+'/OneButton.out.log', 'a', 0)
-        se = open(self._dir['logs']+'/OneButton.err.log', 'a', 0)
-        os.dup2(so.fileno(), sys.stdout.fileno())
-        os.dup2(se.fileno(), sys.stderr.fileno())
-
-        import atexit
-        atexit.register(self._delpid)
-        pid = str(os.getpid())
-        with open(self._dir['pids']+'/OneButton.pid', 'w') as f:
-            f.write(pid)
-
-    def _delpid(self):
-        os.remove(self._dir['pids']+'/OneButton.pid')
-
     def saveConfig(self):
         pass
 
@@ -103,7 +66,7 @@ class OneButton(object):
             proc.wait()
         info("%s was started" % name)
 
-    def run(self):
+    def _init(self):
         info('Initializing...')
         try:
             self._runProcesses(Display)
@@ -116,6 +79,9 @@ class OneButton(object):
             raise
 
         info('Initialization done')
+
+    def _run(self):
+        info('Running...')
         self._running = True
         while self._running:
             try:
@@ -128,6 +94,10 @@ class OneButton(object):
                 self.stop()
                 raise
         self.stop()
+
+    def run(self):
+        self._init()
+        self._run()
 
     def _stopProcesses(self, Class):
         if type(Class) == str:
