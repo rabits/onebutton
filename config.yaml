@@ -1,7 +1,7 @@
 --- # Default onebutton configuration
 global:
   log:
-    verbose: Null # True - verbose, False - not verbose, Null - middle
+    verbose: null # true - verbose, false - not verbose, null - middle
   dir:
     logs: ~/.local/onebutton/logs # Used to place processes err & out logs
     pids: ~/.local/onebutton/pids # Used to place processes pid files
@@ -10,7 +10,8 @@ Button:
   - name: FootSwitch
     type: gpio
     config:
-      pin: 98
+      fixed: false # Button with (only push event) or without (support push and long push events) fixation
+      pin: 98 # connected GPIO pin (second wire connected to GND)
 
 Display:
   - name: RGB8x8Display
