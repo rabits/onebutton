@@ -67,8 +67,10 @@ uint8_t buttons_num = 0;
 
 int main(int argc, char *argv[])
 {
+    // Disable buffering to quick send messages to onebutton
     setbuf(stdout, NULL);
     setbuf(stderr, NULL);
+
     printf("{\"type\":\"info\", \"msg\":\"Init...\"}\n");
     uint8_t pin = 27;
 

@@ -14,6 +14,7 @@ class Plugin(Process):
         log.debug("Initializing plugin %s" % self.__class__.__name__)
 
         self._init_done = False
+        self._process_stdout_thread = None
 
         if 'path' in config:
             plugin_runfile = os.path.join(os.path.expanduser(config['plugin_dirpath']), 'run')

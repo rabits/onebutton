@@ -1,7 +1,7 @@
 --- # Default onebutton configuration
 global:
   log:
-    verbose: null # true - verbose, false - not verbose, null - middle
+    verbose: true # true - verbose, false - not verbose, null - middle
   dir:
     logs: ~/.local/onebutton/logs # Used to place processes err & out logs
     pids: ~/.local/onebutton/pids # Used to place processes pid files
@@ -38,13 +38,21 @@ Guitarix:
     rpc_port: 8881 # Port to handle by json-rpc
     jack: esi-ugm96 # Connect to jackd with this name
     mapping:
-      inputs:
+      inputs: # Basically you can use "amp", or "fx" to skip amp. Be carefully - "amp" have (0) in and (0) out, fx have (0) in and (0,1) out
         - type: audio
-          in: 1
-        - type: audio
-          in: 2
-      outputs:
-        - type: audio
+          module: amp # amp or fx
+          in: 0
           out: 1
         - type: audio
+          module: amp
+          in: 0
           out: 2
+      outputs:
+        - type: audio
+          module: fx
+          out: 0
+          in: 1
+        - type: audio
+          module: fx
+          out: 1
+          in: 2

@@ -30,7 +30,7 @@ class Jack(Process):
         Process.start(self)
 
     def stop(self):
-        self.disconnect()
+        self.clientDisconnect()
         Process.stop(self)
 
     def _jack_info_log(msg):
@@ -46,7 +46,7 @@ class Jack(Process):
         jack.set_info_function(self._jack_info_log)
         jack.set_error_function(self._jack_error_log)
 
-    def disconnect(self):
+    def clientDisconnect(self):
         if self._client:
             log.info("Disconnecting Jack '%s'" % self._cfg['name'])
             self._client.close()
@@ -55,8 +55,26 @@ class Jack(Process):
             del self._client
             self._client = None
 
-    def getConnections(self):
-        return self._client.get_all_connections()
+    def getConnections(self, port):
+        return self._client.get_all_connections(port)
 
-    def getPorts(self):
-        return self._client.get_ports()
+    def getPorts(self, name_pattern="", is_audio=False, is_midi=False,
+            is_input=False, is_output=False, is_physical=False,
+            can_monitor=False, is_terminal=False):
+        return self._client.get_ports(name_pattern, is_audio, is_midi,
+            is_input, is_output, is_physical,
+            can_monitor, is_terminal)
+
+    def connectPorts(self, source, destination):
+        return self._client.connect(source, destination)
+
+    def disconnectPorts(self, source, destination):
+        return self._client.disconnect(source, destination)
+
+    def disconnectAllPorts(self):
+        for port in self.getPorts(is_output=True):
+            log.debug("Disconnecting port %s" % port)
+            for conn_port in self.getConnections(port):
+                log.debug("  disconnecting with: %s" % conn_port)
+                self.disconnectPorts(port, conn_port)
+

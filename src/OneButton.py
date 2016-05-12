@@ -71,17 +71,20 @@ class OneButton(object):
 
     def _init(self):
         log.info('Initializing...')
-        try:
-            self._runProcesses(Display)
-            self._runProcesses(Jack)
-            self._runProcesses(Guitarix)
-            self._runProcesses(Button)
-        except:
-            log.error('Something went wrong...')
-            self.stop()
-            raise
+        self._runProcesses(Display)
+        self._runProcesses(Jack)
+        self._runProcesses(Guitarix)
+        self._runProcesses(Button)
 
         log.info('Initialization done')
+
+    def _setup(self):
+        log.info('Startup setup...')
+        for jack in self._processes[Jack.__name__]:
+            jack.disconnectAllPorts()
+        for guitarix in self._processes[Guitarix.__name__]:
+            guitarix.connectJack(self._processes[Jack.__name__])
+        log.info('Startup setup done')
 
     def _run(self):
         log.info('Running...')
@@ -99,7 +102,14 @@ class OneButton(object):
         self.stop()
 
     def run(self):
-        self._init()
+        try:
+            self._init()
+            self._setup()
+        except:
+            log.error('Something went wrong...')
+            self.stop()
+            raise
+
         self._run()
 
     def _stopProcesses(self, Class):

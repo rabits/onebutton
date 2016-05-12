@@ -105,3 +105,6 @@ class Process(object):
         if self._process:
             log.info("Waiting for %s init" % self.__class__.__name__)
             self.client()
+
+    def name(self):
+        return self._cfg['name']
