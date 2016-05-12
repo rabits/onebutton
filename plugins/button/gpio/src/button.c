@@ -67,6 +67,8 @@ uint8_t buttons_num = 0;
 
 int main(int argc, char *argv[])
 {
+    setbuf(stdout, NULL);
+    setbuf(stderr, NULL);
     printf("{\"type\":\"info\", \"msg\":\"Init...\"}\n");
     uint8_t pin = 27;
 

@@ -19,3 +19,7 @@ Type - is basic part of any message. List of common types:
 * info - log info
 * warn - log warning
 * error - log error
+
+NOTICE
+------
+Make sure, that you disable output buffering in your plugin (ex. for C: `setbuf(stdout, NULL);` )

@@ -3,7 +3,7 @@
 
 from jsonrpctcp import config as JSONRPCConfig, connect as JSONRPCConnect
 
-from Log import debug, info, warn, error
+import Log as log
 from Process import Process
 
 class Guitarix(Process):
@@ -18,7 +18,7 @@ class Guitarix(Process):
         Process.start(self)
 
     def _clientConnect(self):
-        info("Connecting Guitarix client '%s'" % self._cfg['name'])
+        log.info("Connecting Guitarix client '%s'" % self._cfg['name'])
         self._client = JSONRPCConnect('localhost', self._cfg['rpc_port'])
         self.version()
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-from Log import debug, info, warn, error
-from Process import Process
+import Log as log
+from Plugin import Plugin
 
-class Button(Process):
+class Button(Plugin):
     """Button controller - runs button plugins and monitor state"""

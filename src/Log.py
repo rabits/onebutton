@@ -3,7 +3,9 @@
 
 from sys import stderr, stdout, _getframe
 from time import strftime, time, localtime
+from inspect import stack
 
+# Common using functions:
 def debug(msg):
     pass
 def info(msg):
@@ -13,10 +15,10 @@ def warn(msg):
 def error(msg):
     pass
 
+# Set verbose level - True: verbose, False: errors only, None: without debug
 def logSetVerbose(level):
-    global debug, info, warn, log, error
+    global debug, info, warn, error
     if level == True:
-        import inspect
         debug = lambda msg: _logOutVerbose('DEBUG', msg)
         info = lambda msg: _logOutVerbose('INFO', msg)
         warn = lambda msg: _logOutVerbose('WARN', msg)
@@ -30,19 +32,20 @@ def logSetVerbose(level):
         warn = lambda msg: _logOut('WARN', msg)
         error = _logError
 
+# Mostly service log to use with custom output streams
+def log(level, msg, out=stdout):
+    out.write('[%s %s]:\t %s\n' % (strftime('%H:%M:%S'), level.upper(), msg))
 
-
-
-def log(level, msg):
-    pass
-
+#
+# Service functions
+#
 def _logOutVerbose(level, msg):
     log_time = time()
-    stdout.write('[%s.%s %s, line:%03u]:\t %s\n' % (strftime('%H:%M:%S', localtime(log_time)), str(log_time % 1)[2:8], level, _getframe().f_back.f_lineno, '  ' * (len(inspect.stack()) - 1) + msg))
+    stdout.write('[%s.%s %s, line:%03u]:\t %s\n' % (strftime('%H:%M:%S', localtime(log_time)), str(log_time % 1)[2:8], level, _getframe().f_back.f_lineno, '  ' * (len(stack()) - 1) + msg))
 
 def _logErrorVerbose(msg):
     log_time = time()
-    stderr.write('[%s.%s %s, line:%03u]:\t %s\n' % (strftime('%H:%M:%S', localtime(log_time)), str(log_time % 1)[2:8], 'ERROR', _getframe().f_back.f_lineno, '  ' * (len(inspect.stack()) - 1) + msg))
+    stderr.write('[%s.%s %s, line:%03u]:\t %s\n' % (strftime('%H:%M:%S', localtime(log_time)), str(log_time % 1)[2:8], 'ERROR', _getframe().f_back.f_lineno, '  ' * (len(stack()) - 1) + msg))
     return Exception(msg)
 
 def _logOut(level, msg):
@@ -55,4 +58,5 @@ def _logError(msg):
 def _pass(msg):
     pass
 
+# Init module by setting defaule verbose level
 logSetVerbose(None)

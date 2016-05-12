@@ -14,7 +14,7 @@ import sys
 import os
 import time
 
-from Log import debug, info, warn, error
+import Log as log
 from Display import Display
 from Jack import Jack
 from Guitarix import Guitarix
@@ -34,9 +34,9 @@ class OneButton(object):
         try:
             with open(os.path.abspath(os.path.expanduser(self._cfg_path)), 'rb') as f:
                 self._cfg = yaml.load(f.read())
-                info("Using configuration from '%s'" % f.name)
+                log.info("Using configuration from '%s'" % f.name)
         except IOError:
-            warn("Unable to read config file '%s'" % self._cfg_path)
+            log.warn("Unable to read config file '%s'" % self._cfg_path)
 
         if self._cfg == None:
             raise Exception("Unable to read configuration")
@@ -46,8 +46,11 @@ class OneButton(object):
         for key in self._cfg['global']['dir']:
             self._dir[key] = os.path.abspath(os.path.expanduser(self._cfg['global']['dir'][key]))
             if not os.path.isdir(self._dir[key]):
-                info("Make directory '%s'" % self._dir[key])
+                log.info("Make directory '%s'" % self._dir[key])
                 os.makedirs(self._dir[key])
+        if 'verbose' in self._cfg['global']['log']:
+            log.logSetVerbose(self._cfg['global']['log']['verbose'])
+            log.info("Set verbose mode to %s" % self._cfg['global']['log']['verbose'])
 
     def saveConfig(self):
         pass
@@ -57,40 +60,40 @@ class OneButton(object):
         self._processes[name] = []
         for i, cfg in enumerate(self._cfg[name]):
             self._processes[name].append(Class(cfg,
-                open(self._dir['logs']+'/%s_%d.out.log' % (name, i), 'w', 0),
-                open(self._dir['logs']+'/%s_%d.err.log' % (name, i), 'w', 0),
+                open(self._dir['logs']+'/%s_%d.out.log' % (name, i), 'w', 1),
+                open(self._dir['logs']+'/%s_%d.err.log' % (name, i), 'w', 1),
                 self._dir['pids']+'/%s_%d.pid' % (name, i)))
 
-        info("Waiting till %s will be started..." % name)
+        log.info("Waiting till %s will be started..." % name)
         for proc in self._processes[name]:
             proc.wait()
-        info("%s was started" % name)
+        log.info("%s was started" % name)
 
     def _init(self):
-        info('Initializing...')
+        log.info('Initializing...')
         try:
             self._runProcesses(Display)
             self._runProcesses(Jack)
             self._runProcesses(Guitarix)
             self._runProcesses(Button)
         except:
-            error('Something went wrong...')
+            log.error('Something went wrong...')
             self.stop()
             raise
 
-        info('Initialization done')
+        log.info('Initialization done')
 
     def _run(self):
-        info('Running...')
+        log.info('Running...')
         self._running = True
         while self._running:
             try:
                 time.sleep(5)
             except (KeyboardInterrupt, SystemExit):
-                info('Received stop signal')
+                log.info('Received stop signal')
                 break
             except:
-                error('Abnormal stop...')
+                log.error('Abnormal stop...')
                 self.stop()
                 raise
         self.stop()
@@ -114,7 +117,7 @@ class OneButton(object):
             del self._processes[name]
 
     def stop(self):
-        info("Stopping processes...")
+        log.info("Stopping processes...")
         self._running = False
         self._stopProcesses(Button)
         self._stopProcesses(Guitarix)
@@ -127,16 +130,16 @@ class OneButton(object):
 
 if __name__ == '__main__':
     if os.geteuid() == 0:
-        error('Script is running by the root user - it is really dangerous! Please use unprivileged user with sudo access')
+        log.error('Script is running by the root user - it is really dangerous! Please use unprivileged user with sudo access')
         sys.exit(1)
 
     if len(sys.argv) < 2:
         print("Usage: onebutton <config.yaml>")
-        error("No config file argument found")
+        log.error("No config file argument found")
         sys.exit(1)
     onebutton = OneButton(sys.argv[1])
 
     onebutton.run()
 
-    info("Exiting...")
+    log.info("Exiting...")
     sys.exit(0)

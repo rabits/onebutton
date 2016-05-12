@@ -11,13 +11,13 @@ Required:    python2.7, python-cffi
 
 import sys, os
 
-from Log import info, error
+import Log as log
 from OneButton import OneButton
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
         print("Usage: onebutton-daemon.py <user> <config.yaml>")
-        error("Wrong arguments for OneButton Daemon")
+        log.error("Wrong arguments for OneButton Daemon")
         sys.exit(1)
     try:
         from pwd import getpwnam
@@ -28,9 +28,9 @@ if __name__ == '__main__':
         os.environ['HOME'] = user.pw_dir
 
         pid = open('/run/onebutton.pid', 'w+')
-        logfile = open('/var/log/onebutton.log', 'a', 0)
+        logfile = open('/var/log/onebutton.log', 'a', 1)
 
-        info("Daemonize with user %s %d" % (user.pw_name, user.pw_uid))
+        log.info("Daemonize with user %s %d" % (user.pw_name, user.pw_uid))
 
         import daemon
         with daemon.DaemonContext(uid=user.pw_uid,
@@ -45,5 +45,5 @@ if __name__ == '__main__':
     except:
         raise
 
-    info("Exiting...")
+    log.info("Exiting...")
     sys.exit(0)

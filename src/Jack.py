@@ -3,7 +3,7 @@
 
 import jack
 
-from Log import debug, info, warn, error
+import Log as log
 from Process import Process
 
 class Jack(Process):
@@ -34,15 +34,13 @@ class Jack(Process):
         Process.stop(self)
 
     def _jack_info_log(msg):
-        self._logout.write("INFO: "+msg+"\n")
-        #self._logout.flush()
+        log.log('INFO', msg, self._logout)
 
     def _jack_error_log(msg):
-        self._logerr.write("ERROR: "+msg+"\n")
-        #self._logerr.flush()
+        log.log('ERROR', msg, self._logout)
 
     def _clientConnect(self):
-        info("Connecting Jack '%s'" % self._cfg['name'])
+        log.info("Connecting Jack '%s'" % self._cfg['name'])
         jack.set_error_function(lambda msg: None)
         self._client = jack.Client("onebutton", no_start_server=True, servername=self._cfg['name'])
         jack.set_info_function(self._jack_info_log)
@@ -50,7 +48,7 @@ class Jack(Process):
 
     def disconnect(self):
         if self._client:
-            info("Disconnecting Jack '%s'" % self._cfg['name'])
+            log.info("Disconnecting Jack '%s'" % self._cfg['name'])
             self._client.close()
             jack.set_info_function(None)
             jack.set_error_function(None)

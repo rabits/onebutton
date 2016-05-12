@@ -9,15 +9,19 @@ global:
 Button:
   - name: FootSwitch
     type: gpio
+#    path: /some/dir/plugin # Path to required plugin directory
     config:
       fixed: false # Button with (only push event) or without (support push and long push events) fixation
-      pin: 98 # connected GPIO pin (second wire connected to GND)
+      args: # Plugin arguments list
+        - 99 # connected GPIO pin (second wire connected to GND)
 
 Display:
   - name: RGB8x8Display
     type: ttyusb
+#    path: /some/dir/plugin # Path to required plugin directory
     config:
-      dev: ttyUSB0
+      args: # Plugin arguments list
+        - /dev/ttyUSB0 # Display device
 
 Jack:
   - name: esi-ugm96
