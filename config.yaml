@@ -3,8 +3,8 @@ global:
   log:
     verbose: true # true - verbose, false - not verbose, null - middle
   dir:
-    logs: ~/.local/onebutton/logs # Used to place processes err & out logs
-    pids: ~/.local/onebutton/pids # Used to place processes pid files
+    logs: ~/.local/share/onebutton/logs # Used to place processes err & out logs
+    pids: ~/.local/share/onebutton/pids # Used to place processes pid files
 
 Button:
   - name: FootSwitch
