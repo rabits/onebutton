@@ -84,6 +84,11 @@ class OneButton(object):
             jack.disconnectAllPorts()
         for guitarix in self._processes[Guitarix.__name__]:
             guitarix.connectJack(self._processes[Jack.__name__])
+
+        # TODO: Temp button implementation
+        for button in self._processes[Button.__name__]:
+            button.connectJack(self._processes[Jack.__name__][0])
+
         log.info('Startup setup done')
 
     def _run(self):

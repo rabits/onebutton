@@ -78,3 +78,20 @@ class Jack(Process):
                 log.debug("  disconnecting with: %s" % conn_port)
                 self.disconnectPorts(port, conn_port)
 
+    def triggerBypass(self):
+        # TODO: really bad implementation of bypass
+        if not hasattr(self, "_bypass"):
+            self._bypass = False
+
+        if self._bypass:
+            self.disconnectAllPorts()
+            self._guitarix.connectJack([self])
+        else:
+            self.disconnectAllPorts()
+            for i in [1,2]:
+                outs = self.getPorts(name_pattern="system:capture_%d" % i, is_audio=True, is_output=True)
+                ins = self.getPorts(name_pattern="system:playback_%d" % i, is_audio=True, is_input=True)
+                self.connectPorts(outs[0], ins[0])
+
+        self._bypass = not self._bypass
+

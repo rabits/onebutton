@@ -29,6 +29,9 @@ class Guitarix(Process):
         log.info("Connecting ports of Guitarix to Jack...")
         jack = filter(lambda j: j.name() == self._cfg['jack'], jacks)[0]
 
+        # TODO: bad way to make bypass working, please rewrite it
+        jack._guitarix = self
+
         m = self._cfg['mapping']
 
         for i in m['inputs']:
