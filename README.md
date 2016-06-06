@@ -2,11 +2,10 @@ OneButton
 =========
 It is portable guitar processor, based on Guitarix, Jackd and Linux.
 
-BoneButton|TankButton
-----------|----------
-![BoneButton 3d](/doc/bonebutton-body-3d.jpg)|na
-----------|----------
-![BoneButton Live](/doc/bonebutton-body-live.jpg)|na
+| BoneButton | TankButton |
+| ---------- | ---------- |
+| <img src="/doc/bonebutton-body-3d.jpg" width="200"> | na |
+| <img src="/doc/bonebutton-body-live.jpg" width="200"> | na |
 
 Main idea
 ---------
