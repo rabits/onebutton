@@ -2,6 +2,12 @@ OneButton
 =========
 It is portable guitar processor, based on Guitarix, Jackd and Linux.
 
+BoneButton|TankButton
+----------|----------
+![BoneButton 3d](/doc/bonebutton-body-3d.jpg)|na
+----------|----------
+![BoneButton Live](/doc/bonebutton-body-live.jpg)|na
+
 Main idea
 ---------
 DIY opensource guitar processor with one button, simple display and infinity ways for customization.
@@ -41,7 +47,15 @@ Reference hardware
 Right now I use the following hardware:
 * Platform:
   * ODROID-C1+
+    + CPU: 4x 1.5GHz 32bit
+    + RAM: 1GB
+    + eMMC + MicroSD
+    + 4x USB + OTG
   * ODROID-C2
+    + CPU: 4x 2GHz 64bit
+    + RAM: 2GB
+    + eMMC + MicroSD
+    + 4x USB + OTG
 * Audio:
   * ESI UGM96
   * ESI Maya22
@@ -56,11 +70,36 @@ Also GPIO is not required - just write small plugin python script and use any US
 Installation
 ------------
 * Prepare your system to use realtime settings: http://github.com/raboof/realtimeconfigquickscan
+* Install requirements: python-yaml python-bluez
 * Clone onebutton repo
 * Change config.yaml to suit your HW configuration
 * Run `./onebutton config.yaml` and check logs that everything fine
 * Rock & Roll!
 * Optional: copy init script (upstart.conf) to run onebutton on system start
+
+TODO
+----
+* Platforms:
+  * Banana Pi M3
+    + CPU: 8x 1.8GHz
+    + RAM: 2GB
+    + 2 USB + OTG
+    + SATA + int eMMC 8Gb + MicroSD
+    + WiFi(n)
+    + Bluetooth(4.0)
+  * Banana Pi M2+
+    + CPU: 4x 1.2GHz
+    + RAM: 1GB
+    + 2 USB + OTG
+    + int eMMC 8Gb + MicroSD
+    + WiFi(n)
+    + Bluetooth(4.0)
+  * Raspberry Pi 3B
+    + CPU: 4x 1.2GHz 64bit
+    + RAM: 1GB
+    + 4 USB + OTG
+    + WiFi(n)
+    + Bluetooth(4.1+BLE)
 
 Donation
 --------
