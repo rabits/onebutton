@@ -1,0 +1,40 @@
+#!/bin/sh
+
+VERSION="1.6.9"
+
+ARCH=$(uname -p)
+SUBDIR="arduino-${VERSION}"
+UNPACK_DIR="/tmp"
+ARDUINO_DIR="${UNPACK_DIR}/${SUBDIR}"
+URL_BEGIN="https://www.arduino.cc/download.php?f=/${SUBDIR}"
+
+if [ ! -d "/tmp/${SUBDIR}" ]; then
+    case $ARCH in
+        x86_64)
+            wget -O "${ARDUINO_DIR}.tar.xz" "${URL_BEGIN}-linux64.tar.xz"
+            ;;
+        arm*)
+            wget -O "${ARDUINO_DIR}.tar.xz" "${URL_BEGIN}-linuxarm.tar.xz"
+            ;;
+        *)
+            echo "ERROR: unsupported arch '${ARCH}'"
+            exit 1
+            ;;
+    esac
+
+    tar xf "${ARDUINO_DIR}.tar.xz" -C "${UNPACK_DIR}"
+fi
+
+OUTPUTDIR=$(mktemp -d -p "arduino_build")
+trap "rm -rf ${OUTPUTDIR}" EXIT
+
+
+# Generate fonts
+./util/convert_font2header.py ./src/rainbowduino/font5px.txt
+
+# Build project
+"${ARDUINO_DIR}/arduino-builder" -compile -logger=machine -hardware "${ARDUINO_DIR}/hardware" -tools "${ARDUINO_DIR}/tools-builder" -tools "${ARDUINO_DIR}/hardware/tools/avr" -built-in-libraries "${ARDUINO_DIR}/libraries" -fqbn=arduino:avr:diecimila:cpu=atmega328 -ide-version=10609 -build-path "${OUTPUTDIR}" -warnings=none -prefs=build.warn_data_percentage=75 -verbose "./src/rainbowduino/rainbowduino.ino"
+
+# Upload to board
+"${ARDUINO_DIR}/hardware/tools/avr/bin/avrdude" "-C${ARDUINO_DIR}/hardware/tools/avr/etc/avrdude.conf" -v -patmega328p -carduino -P/dev/ttyUSB0 -b57600 -D "-Uflash:w:${OUTPUTDIR}/rainbowduino.ino.hex:i"
+

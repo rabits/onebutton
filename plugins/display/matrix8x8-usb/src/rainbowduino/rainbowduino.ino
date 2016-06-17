@@ -1,11 +1,12 @@
 /**
  * Onebutton Arduino 8x8 rainbowduino display controller
+ * Board: "Duemilanove or Diecimila"
 **/
 
 #include "Rainbowduino/Rainbowduino.h"
 #include "frames_store.h"
 #include "color.h"
-#include "font5px.h"
+#include "font5px.generated.h"
 
 void (*_current_show_function)();
 
@@ -115,7 +116,7 @@ void showString() {
 
 uint8_t readSerial(uint16_t delay_ms, uint8_t bytes = 64) {
     Serial.setTimeout(delay_ms);
-    bytes = Serial.readBytes(_read_buffer, bytes);
+    return Serial.readBytes(_read_buffer, bytes);
 }
 
 void setup()

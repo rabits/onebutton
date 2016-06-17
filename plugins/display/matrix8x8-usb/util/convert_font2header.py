@@ -17,9 +17,7 @@ for f in sys.argv[1:]:
         print "ERROR: skipping non-file %s" % f
         continue
 
-    name = f.rsplit('.', 1)[0].lower()
-    accepted_chars = [ chr(char) for char in range(ord('0'),ord('9')+1) + range(ord('a'),ord('z')+1) ]
-    name = ''.join([ c if c in accepted_chars else '_' for c in name ])
+    name = f.rsplit('.', 1)[0]
 
     print "Processing font file '%s':" % f
     font = { 'data':{} }
@@ -77,27 +75,40 @@ for f in sys.argv[1:]:
         for i in range(int(ceil(len(tmpbytes)/8.0))):
             font['bytes'].append('0x%02x' % int(tmpbytes[i*8:i*8+8].ljust(8, '0'), 2))
 
-    with open(name + ".h", 'w') as fdw:
-        guard_name = name.upper() + '_H'
+    with open(name + ".generated.h", 'w') as fdw:
+        data_chars = [ chr(char) for char in range(ord('0'),ord('9')+1) + range(ord('a'),ord('z')+1) ]
+        data_name = os.path.basename(name)
+        data_name = ''.join([ c if c in data_chars else '_' for c in data_name ])
+        guard_name = data_name.upper() + '_H'
+
         fdw.write("#ifndef %s\n" % guard_name)
         fdw.write("#define %s\n" % guard_name)
         fdw.write("// Font data for %s\n" % f)
 
-        fdw.write('\nconst uint8_t %s_data[] PROGMEM = {\n' % name)
+        fdw.write('\nconst uint8_t %s_data[%d] PROGMEM = {\n' % (data_name, len(font['bytes'])))
+        print(font)
         for i in range(int(ceil(len(font['bytes'])/8.0))):
             fdw.write('    %s,\n' % ','.join(font['bytes'][i*8:i*8+8]))
         fdw.write("};\n\n")
 
-        fdw.write('#define %s_HEIGHT %d\n\n' % (name.upper(), font['height']))
+        fdw.write('#define %s_HEIGHT %d\n\n' % (data_name.upper(), font['height']))
 
         for w in font['symbols']:
-            fdw.write('const uint8_t %s_width_%d[] = "%s";\n' % (name, w, ''.join([ '\\x%02x' % o for o in font['symbols'][w] ])))
+            fdw.write('const char %s_width_%d[] = "%s";\n' % (data_name, w, ''.join([ '\\x%02x' % o for o in font['symbols'][w] ])))
 
-        fdw.write("\nuint8_t getCharPos%s(uint8_t ascii, uint16_t *pos, uint16_t *offset) {\n" % name.capitalize())
-        fdw.write("    uint8_t *pch;\n\n")
+        fdw.write("\nuint8_t getCharWidth%s(uint8_t ascii) {\n" % data_name.capitalize())
+        fdw.write("    char *pch;\n\n")
         for w in font['symbols']:
-            fdw.write("    pch = strchr(%s_width_%d, ascii);\n" % (name, w))
-            fdw.write("    if( pch != NULL ) { *pos = (pch - %s_width_%d)*%s_HEIGHT*%d; *offset = %d; return %d; }\n\n" % (name, w, name.upper(), w, font['offset'][w], w))
+            fdw.write("    pch = strchr(%s_width_%d, ascii);\n" % (data_name, w))
+            fdw.write("    if( pch != NULL ) { return %d; }\n\n" % w)
+        fdw.write("    return 0;\n")
+        fdw.write("}\n")
+
+        fdw.write("\nuint8_t getCharPos%s(uint8_t ascii, uint16_t *pos, uint16_t *offset) {\n" % data_name.capitalize())
+        fdw.write("    char *pch;\n\n")
+        for w in font['symbols']:
+            fdw.write("    pch = strchr(%s_width_%d, ascii);\n" % (data_name, w))
+            fdw.write("    if( pch != NULL ) { *pos = (pch - %s_width_%d)*%s_HEIGHT*%d; *offset = %d; return %d; }\n\n" % (data_name, w, data_name.upper(), w, font['offset'][w], w))
         fdw.write("    return 0;\n")
         fdw.write("}\n")
 

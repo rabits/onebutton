@@ -167,7 +167,6 @@ void Rainbowduino::switchOnDrive(unsigned char line)
 void Rainbowduino::clearDisplay(void)
 {
     unsigned char i=0;
-    unsigned char f=0;
 
     send16bitData(CmdMode);
     PORT_Data &=~ BIT_Data;
