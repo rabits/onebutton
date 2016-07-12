@@ -16,10 +16,11 @@ uint16_t _frame_delay = 33;
 
 uint8_t _brightness = 100;
 
-char test_string[] = "Hi, baby - you're looks so nice today!";
-uint8_t test_string_len = strlen(test_string);
+char _show_string[255] = "OneButton loading...";
+uint8_t _show_string_rgb[] = {0x00, 0x40, 0x00};
+uint8_t _show_string_len = strlen(_show_string);
 
-char _read_buffer[64];
+char _read_buffer[260];
 unsigned int _buffer_size = 0;
 
 uint8_t _tuner_direction = 0;
@@ -63,15 +64,13 @@ void showInit() {
 
 void showTuner()
 {
+    uint8_t rgb[] = {0x00, 0xff, 0x00};
     if( _tuner_direction == 0 ) {
         _frame_delay = 100;
         if( _next_frame%2 ) {
-            uint8_t rgb[] = {0x00, 0xff, 0x00};
             bright(rgb, _brightness);
-            Rb.setPixelXY(3, 5, rgb[0], rgb[1], rgb[2]);
             Rb.setPixelXY(3, 6, rgb[0], rgb[1], rgb[2]);
             Rb.setPixelXY(3, 7, rgb[0], rgb[1], rgb[2]);
-            Rb.setPixelXY(4, 5, rgb[0], rgb[1], rgb[2]);
             Rb.setPixelXY(4, 6, rgb[0], rgb[1], rgb[2]);
             Rb.setPixelXY(4, 7, rgb[0], rgb[1], rgb[2]);
         } else {
@@ -81,30 +80,35 @@ void showTuner()
     } else {
         Rb.blankDisplay();
         float hsv[] = {0.000333333f*_frame_delay/2, 1.0f, _brightness/255.0f};
-        uint8_t rgb[] = {0x00, 0x00, 0x00};
         hsv2rgb(hsv, rgb);
-        Rb.setPixelXY(_next_frame, 5, rgb[0], rgb[1], rgb[2]);
         Rb.setPixelXY(_next_frame, 6, rgb[0], rgb[1], rgb[2]);
         Rb.setPixelXY(_next_frame, 7, rgb[0], rgb[1], rgb[2]);
         _next_frame = (_next_frame+_tuner_direction)%8;
     }
+
+    if( _show_string_len == 1 ) {
+        drawChar(_show_string[0], 3, 0, rgb);
+    } else if( _show_string_len == 2 ) {
+        drawChar(_show_string[0], 0, 0, rgb);
+        drawChar(_show_string[1], 4, 0, rgb);
+    }
 }
 
 void showString() {
-    _frame_delay = 100;
+    _frame_delay = 150;
     Rb.blankDisplay();
-    uint8_t rgb[] = {0xff, 0x00, 0x00};
 
-    uint8_t string_width = 8;
-    for( uint8_t charpos = 0; charpos < test_string_len; charpos++ ) {
-        uint8_t w = getCharWidthFont5px(test_string[charpos]);
+    uint16_t string_width = 8;
+    for( uint8_t charpos = 0; charpos < _show_string_len; charpos++ ) {
+        uint8_t w = getCharWidthFont5px(_show_string[charpos]);
         int16_t pos = string_width - _next_frame;
 
         if( pos < 8 ) {
             if( (pos + w) >= 0 ) {
-                drawChar(test_string[charpos], pos, 0, rgb);
-            } else if( (charpos + 1) == test_string_len )
+                drawChar(_show_string[charpos], pos, 0, _show_string_rgb);
+            } else if( (charpos + 1) >= _show_string_len ) {
                 _next_frame = 0;
+            }
         } else
             break;
 
@@ -151,7 +155,6 @@ void loop()
         if( _buffer_size > 0 ) {
             switch( _read_buffer[0] )
             {
-
                 case 'c': // Clean
                     _current_show_function = &showClean;
 
@@ -171,6 +174,11 @@ void loop()
                     } else
                         _tuner_direction = 0;
 
+                    _buffer_size = readSerial(_frame_delay-process_time, 2);
+                    _show_string_len = _buffer_size;
+                    if( _show_string_len > 0 )
+                        strncpy(_show_string, _read_buffer, 2);
+
                     _current_show_function = &showTuner;
 
                     Serial.print("tuner: ");
@@ -178,11 +186,25 @@ void loop()
                     return;
 
                 case 's': // Symbols
-                    _current_show_function = &showTuner;
+                    _current_show_function = &showString;
+                    _next_frame = 0;
 
-                    _read_buffer[_buffer_size] = 0x00;
-                    Serial.print("symbols: ");
-                    Serial.println(_read_buffer);
+                    _show_string_rgb[0] = _read_buffer[1];
+                    _buffer_size = readSerial(_frame_delay-process_time, 2);
+                    _show_string_rgb[1] = _read_buffer[0];
+                    _show_string_rgb[2] = _read_buffer[1];
+
+                    Serial.print("Time: ");
+                    Serial.print(_frame_delay-process_time, DEC);
+                    Serial.print(" ");
+                    _buffer_size = readSerial(_frame_delay-process_time, 255);
+                    strncpy(_show_string, _read_buffer, 255);
+                    _show_string_len = _buffer_size;
+                    Serial.print(_frame_delay-process_time, DEC);
+
+                    Serial.print(" Symbols: '");
+                    Serial.print(_show_string);
+                    Serial.println("'");
                     return;
 
                 default: // Print echo
