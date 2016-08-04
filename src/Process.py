@@ -7,10 +7,13 @@ import os
 from signal import SIGTERM, SIGKILL
 
 import Log as log
+from Module import Module
 
-class Process(object):
+class Process(Module):
     """Process - common class to run command as subprocess"""
     def __init__(self, config, logout, logerr, pidpath):
+        Module.__init__(self, config, logout, logerr)
+
         if not hasattr(self, "_command"):
             self._command = None
         if not hasattr(self, "_command_cwd"):
@@ -18,9 +21,6 @@ class Process(object):
         self._process = None
         self._client = None
 
-        self._cfg = config
-        self._logout = logout
-        self._logerr = logerr
         self._pidpath = pidpath
 
         self.start()

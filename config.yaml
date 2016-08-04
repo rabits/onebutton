@@ -36,9 +36,10 @@ Jack:
 Guitarix:
   - name: guitar1
     rpc_port: 8881 # Port to handle by json-rpc
+    web: 8081 # Web interface port or false to disable
     jack: esi-ugm96 # Connect to jackd with this name
     mapping:
-      inputs: # Basically you can use "amp", or "fx" to skip amp. Be carefully - "amp" have (0) in and (0) out, fx have (0) in and (0,1) out
+      inputs: # Basically you can use "amp", or "fx" to skip amp. Be carefully - "amp" has (0) in and (0) out, fx has (0) in and (0,1) out
         - type: audio
           module: amp # amp or fx
           in: 0
@@ -56,3 +57,9 @@ Guitarix:
           module: fx
           out: 1
           in: 2
+
+Bluetooth:
+  - name: OneButton
+    dev: hci0 # Bluetooth device name
+    encrypt: true # Encrypt bluetooth link
+    visible: true # Visible to device scan
