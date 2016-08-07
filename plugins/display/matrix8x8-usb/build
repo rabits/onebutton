@@ -16,6 +16,12 @@ if [ ! -d "/tmp/${SUBDIR}" ]; then
         arm*)
             wget -O "${ARDUINO_DIR}.tar.xz" "${URL_BEGIN}-linuxarm.tar.xz"
             ;;
+        aarch64)
+            sudo dpkg --add-architecture armhf
+            sudo apt-get update
+            sudo apt-get install libc6:armhf zlib1g:armhf libtinfo5:armhf
+            wget -O "${ARDUINO_DIR}.tar.xz" "${URL_BEGIN}-linuxarm.tar.xz"
+            ;;
         *)
             echo "ERROR: unsupported arch '${ARCH}'"
             exit 1

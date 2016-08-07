@@ -41,15 +41,14 @@ Additional features
 * Switch presets without pause and clicking
 * No cut-off when swiching presets (for ex. delay & reverb processing last output)
 
+Target platform
+---------------
+It is possible to run on any linux distributive, but current target platform is Ubuntu 16.04.
+
 Reference hardware
 ------------------
 Right now I use the following hardware:
 * Platform:
-  * ODROID-C1+
-    + CPU: 4x 1.5GHz 32bit
-    + RAM: 1GB
-    + eMMC + MicroSD
-    + 4x USB + OTG
   * ODROID-C2
     + CPU: 4x 2GHz 64bit
     + RAM: 2GB
@@ -66,12 +65,22 @@ But, you can ignore that, because RaspberryPI & any usb card with high-z input a
 
 Also GPIO is not required - just write small plugin python script and use any USB/UART/(interface)-driven buttons or controller for input/output interfaces.
 
+Not recommended
+---------------
+* Platforms:
+  * ODROID-C1+ - buggy USB (but OTG ok) can cause kernel freezes
+    + CPU: 4x 1.5GHz 32bit
+    + RAM: 1GB
+    + eMMC + MicroSD
+    + 4x USB + OTG
+
 Installation
 ------------
-* Prepare your system to use realtime settings: http://github.com/raboof/realtimeconfigquickscan
-* Install requirements: python-yaml python-bluez
 * Clone onebutton repo
+* Install guitarix & made some changes from setup.sh
+* Prepare your system to use realtime settings: http://github.com/raboof/realtimeconfigquickscan
 * Change config.yaml to suit your HW configuration
+* Go to plugins directory and build required plugins
 * Run `./onebutton config.yaml` and check logs that everything fine
 * Rock & Roll!
 * Optional: copy init script (upstart.conf) to run onebutton on system start

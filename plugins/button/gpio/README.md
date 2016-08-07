@@ -5,4 +5,11 @@ Input plugin for the OneButton project. Based on wiringpi2 and used interrupts t
 
 Required sudo root previleges.
 
-TODO: make it possible to run with limited permissions
+Build
+-----
+* Compile & install wiringpi for your platform
+* Build with build script
+
+TODO
+----
+Make it possible to run with limited permissions
