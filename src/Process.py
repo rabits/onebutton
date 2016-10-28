@@ -42,26 +42,52 @@ class Process(Module):
         else:
             log.warn("Unable to exec command '%s' to start process %s" % (self._command, self.__class__.__name__))
 
+    def _processCheck(self):
+        if self._process:
+            if self._process.poll() != None:
+                if self._process.returncode == 0:
+                    log.debug("  process %d terminated successfully" % self._process.pid)
+                elif self._process.returncode > 0:
+                    log.warn("  process %d terminated with code %d. Please check log files" % (self._process.pid, self._process.returncode))
+                else:
+                    log.debug("  process %d terminated by signal %d" % (self._process.pid, -self._process.returncode))
+                return False
+        else:
+            log.error("Unable to check process status for %s - process not started" % self.__class__.__name__)
+            return False
+
+        return True
+
     def stop(self):
         if self._process:
             log.info("Stopping %s instance" % self.__class__.__name__)
+            self._clientDisconnect()
+            if not self._processCheck():
+                return
+
             try:
                 pid = self._process.pid
                 self._process.terminate()
-                self._retry = 30
-                while self._process.poll() and self._retry > 0:
-                    self._retry -= 1
+                for retry in range(30):
+                    if not self._processCheck(): break
                     sleep(0.1)
-                self._process = None
-                try:
-                    os.kill(pid, 0)
-                except:
-                    log.warn("Unable to gracefully stop the process %s (pid: %d)" % (self.__class__.__name__, pid))
+                if self._processCheck():
+                    try:
+                        os.kill(pid, SIGKILL)
+                        for retry in range(30):
+                            if not self._processCheck(): break
+                            sleep(0.1)
+                    except Exception as e:
+                        log.warn("Process %s (pid: %d) killing exception: %s" % (self.__class__.__name__, e))
+                    else:
+                        with open(self._pidpath, 'w') as f:
+                            f.truncate()
+                    self._process = None
                 else:
                     with open(self._pidpath, 'w') as f:
                         f.truncate()
             except Exception as e:
-                log.error("Exception durning stopping process: %s" % e)
+                log.error("Process %s exception durning stopping process: %s" % e)
 
         try:
             with open(self._pidpath, 'r') as f:
@@ -73,27 +99,35 @@ class Process(Module):
                     sleep(5)
                     os.kill(int(pid), SIGKILL)
                     log.warn("Killed process %s pid %s" % (self.__class__.__name__, pid))
-        except:
-            pass
+        except Exception as e:
+            log.warn("Process %s terminating exception: %s" % (self.__class__.__name__, e))
 
         with open(self._pidpath, 'w') as f:
             f.truncate()
 
     def _clientConnect(self):
         log.warn("Unable to connect client to process %s" % self.__class__.__name__)
-        pass
+
+    def _clientDisconnect(self):
+        if self._client != None:
+            del self._client
+            self._client = None
 
     def client(self):
         if self._client:
-            log.warn("%s client '%s' already connected" % (self.__class__.__name__, self._cfg['name']))
+            log.warn("%s client already connected" % self.__class__.__name__)
         else:
             self._retry = 10
             while self._retry > 0:
+                if not self._processCheck():
+                    raise log.error("%s process ends before init done" % self.__class__.__name__)
+
                 try:
                     self._clientConnect()
                     break
-                except:
-                    self._client = None
+                except Exception as e:
+                    self._clientDisconnect()
+                    log.debug("Got exception: %s" % e)
                     log.debug("Retry connection to %s (%d)" % (self.__class__.__name__, self._retry))
                     self._retry -= 1
                     sleep(1)
@@ -105,6 +139,8 @@ class Process(Module):
         if self._process:
             log.info("Waiting for %s init" % self.__class__.__name__)
             self.client()
+        else:
+            log.warn("%s process not present" % (self.__class__.__name__))
 
     def name(self):
         return self._cfg['name']
