@@ -23,11 +23,12 @@
 http://jackclient-python.rtfd.org/
 
 """
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 import errno as _errno
 import platform as _platform
 from cffi import FFI as _FFI
+import warnings as _warnings
 
 _ffi = _FFI()
 _ffi.cdef("""
@@ -239,10 +240,10 @@ size_t jack_ringbuffer_write_space(const jack_ringbuffer_t* rb);
 /* TODO: jack_set_sync_callback */
 /* TODO: jack_set_sync_timeout */
 int jack_set_timebase_callback(jack_client_t* client, int conditional, JackTimebaseCallback timebase_callback, void* arg);
-int  jack_transport_locate(jack_client_t* client, jack_nframes_t frame);
+int jack_transport_locate(jack_client_t* client, jack_nframes_t frame);
 jack_transport_state_t jack_transport_query(const jack_client_t* client, jack_position_t* pos);
 jack_nframes_t jack_get_current_transport_frame(const jack_client_t* client);
-/* TODO: jack_transport_reposition */
+int jack_transport_reposition(jack_client_t* client, const jack_position_t* pos);
 void jack_transport_start(jack_client_t* client);
 void jack_transport_stop(jack_client_t* client);
 /* deprecated: jack_get_transport_info */
@@ -321,12 +322,16 @@ _FAILURE = 1
 
 
 class Client(object):
-
     """A client that can connect to the JACK audio server."""
 
     def __init__(self, name, use_exact_name=False, no_start_server=False,
                  servername=None, session_id=None):
         """Create a new JACK client.
+
+        A client object is a *context manager*, i.e. it can be used in a
+        *with statement* to automatically call :meth:`activate` in the
+        beginning of the statement and :meth:`deactivate` and
+        :meth:`close` on exit.
 
         Parameters
         ----------
@@ -358,18 +363,20 @@ class Client(object):
 
         """
         status = _ffi.new("jack_status_t*")
-        args = [name.encode(), _lib.JackNullOption, status]
+        options = _lib.JackNullOption
+        optargs = []
         if use_exact_name:
-            args[1] |= _lib.JackUseExactName
+            options |= _lib.JackUseExactName
         if no_start_server:
-            args[1] |= _lib.JackNoStartServer
+            options |= _lib.JackNoStartServer
         if servername:
-            args[1] |= _lib.JackServerName
-            args.append(_ffi.new("char[]", servername.encode()))
+            options |= _lib.JackServerName
+            optargs.append(_ffi.new("char[]", servername.encode()))
         if session_id:
-            args[1] |= _lib.JackSessionID
-            args.append(_ffi.new("char[]", session_id.encode()))
-        self._ptr = _lib.jack_client_open(*args)
+            options |= _lib.JackSessionID
+            optargs.append(_ffi.new("char[]", session_id.encode()))
+        self._ptr = _lib.jack_client_open(name.encode(), options, status,
+                                          *optargs)
         self._status = Status(status[0])
         if not self._ptr:
             raise JackError(str(self.status))
@@ -679,17 +686,33 @@ class Client(object):
         """
         return TransportState(_lib.jack_transport_query(self._ptr, _ffi.NULL))
 
-    def transport_locate(self, frame):
-        """Reposition the JACK transport to a new frame number.
+    @property
+    def transport_frame(self):
+        """Get/set current JACK transport frame.
 
-        Parameters
-        ----------
-        frame : int
-            Frame number.
+        Return an estimate of the current transport frame, including any
+        time elapsed since the last transport positional update.
+        Assigning a frame number repositions the JACK transport.
 
         """
+        return _lib.jack_get_current_transport_frame(self._ptr)
+
+    @transport_frame.setter
+    def transport_frame(self, frame):
         _check(_lib.jack_transport_locate(self._ptr, frame),
                "Error locating JACK transport")
+
+    def transport_locate(self, frame):
+        """
+
+        .. deprecated:: 0.4.1
+            Use :attr:`transport_frame` instead
+
+        """
+        _warnings.warn(
+            'transport_locate() is deprecated, use transport_frame',
+            DeprecationWarning)
+        self.transport_frame = frame
 
     def transport_query(self):
         """Query the current transport state and position.
@@ -816,11 +839,6 @@ class Client(object):
            help more complex clients understand what is going on.  It
            should be called before :meth:`activate`.
 
-        .. note:: The `callback` should typically signal another thread
-           to correctly finish cleanup by calling :meth:`close` (since
-           :meth:`close` cannot be called directly in the context of the
-           thread that calls the shutdown callback).
-
         Parameters
         ----------
         callback : callable
@@ -831,14 +849,21 @@ class Client(object):
 
             The argument `status` is of type :class:`jack.Status`.
 
-            .. note:: After server shutdown, the client is *not*
+            .. note:: The `callback` should typically signal another
+               thread to correctly finish cleanup by calling
+               :meth:`close` (since it cannot be called directly in the
+               context of the thread that calls the shutdown callback).
+
+               After server shutdown, the client is *not*
                deallocated by JACK, the user (that's you!) is
                responsible to properly use :meth:`close` to release
-               client ressources.
+               client ressources.  Alternatively, the :class:`Client`
+               object can be used as a *context manager* in a *with
+               statement*, which takes care of activating, deactivating
+               and closing the client automatically.
 
-            .. warning:: :meth:`close` cannot be safely used inside the
-               shutdown callback and has to be called outside of the
-               callback context.
+            .. note:: Same as with most callbacks, no functions that
+               interact with the JACK daemon should be used here.
 
         """
         @self._callback("JackInfoShutdownCallback")
@@ -938,6 +963,9 @@ class Client(object):
             The argument `starting` is ``True`` if we start to
             freewheel, ``False`` otherwise.
 
+            .. note:: Same as with most callbacks, no functions that
+               interact with the JACK daemon should be used here.
+
         See Also
         --------
         set_freewheel
@@ -985,6 +1013,9 @@ class Client(object):
                previously referenced, and perform other operations that
                are not realtime safe.
 
+            .. note:: Same as with most callbacks, no functions that
+               interact with the JACK daemon should be used here.
+
         See Also
         --------
         :attr:`blocksize`
@@ -1026,6 +1057,9 @@ class Client(object):
             The argument `samplerate` is the new engine sample rate.
             The `callback` is supposed to raise :class:`CallbackExit` on
             error.
+
+            .. note:: Same as with most callbacks, no functions that
+               interact with the JACK daemon should be used here.
 
         See Also
         --------
@@ -1069,6 +1103,9 @@ class Client(object):
             argument is ``True`` if the client is being registered and
             ``False`` if the client is being unregistered.
 
+            .. note:: Same as with most callbacks, no functions that
+               interact with the JACK daemon should be used here.
+
         """
         @self._callback("JackClientRegistrationCallback")
         def callback_wrapper(name, register, _):
@@ -1104,6 +1141,9 @@ class Client(object):
             :class:`OwnPort` or :class:`OwnMidiPort` object, the second
             argument is ``True`` if the port is being registered,
             ``False`` if the port is being unregistered.
+
+            .. note:: Same as with most callbacks, no functions that
+               interact with the JACK daemon should be used here.
 
         See Also
         --------
@@ -1145,6 +1185,9 @@ class Client(object):
             objects of the ports which are connected or disconnected.
             The third argument is ``True`` if the ports were connected
             and ``False`` if the ports were disconnected.
+
+            .. note:: Same as with most callbacks, no functions that
+               interact with the JACK daemon should be used here.
 
         See Also
         --------
@@ -1188,6 +1231,9 @@ class Client(object):
             is the old and new name, respectively.
             The `callback` is supposed to raise :class:`CallbackExit` on
             error.
+
+            .. note:: Same as with most callbacks, no functions that
+               interact with the JACK daemon should be used here.
 
         See Also
         --------
@@ -1242,6 +1288,9 @@ class Client(object):
             The `callback` is supposed to raise :class:`CallbackExit` on
             error.
 
+            .. note:: Same as with most callbacks, no functions that
+               interact with the JACK daemon should be used here.
+
         """
         @self._callback("JackGraphOrderCallback", error=_FAILURE)
         def callback_wrapper(_):
@@ -1280,6 +1329,9 @@ class Client(object):
             the most recent XRUN occurrence.
             The `callback` is supposed to raise :class:`CallbackExit` on
             error.
+
+            .. note:: Same as with most callbacks, no functions that
+               interact with the JACK daemon should be used here.
 
         """
         @self._callback("JackXRunCallback", error=_FAILURE)
@@ -1535,7 +1587,6 @@ class Client(object):
 
 
 class Port(object):
-
     """A JACK audio port.
 
     This class cannot be instantiated directly.  Instead, instances of
@@ -1655,7 +1706,6 @@ class Port(object):
 
 
 class MidiPort(Port):
-
     """A JACK MIDI port.
 
     This class is derived from :class:`Port` and has exactly the same
@@ -1679,7 +1729,6 @@ class MidiPort(Port):
 
 
 class OwnPort(Port):
-
     """A JACK audio port owned by a :class:`Client` object.
 
     This class is derived from :class:`Port`.  :class:`OwnPort` objects
@@ -1808,6 +1857,9 @@ class OwnPort(Port):
         optimization (like "pipelining").  Port buffers have to be
         retrieved in each callback for proper functioning.
 
+        This method shall only be called from within the process
+        callback (see :meth:`Client.set_process_callback`).
+
         """
         blocksize = self._client.blocksize
         return _ffi.buffer(_lib.jack_port_get_buffer(self._ptr, blocksize),
@@ -1819,6 +1871,9 @@ class OwnPort(Port):
         Make sure to ``import numpy`` before calling this, otherwise the
         first call might take a long time.
 
+        This method shall only be called from within the process
+        callback (see :meth:`Client.set_process_callback`).
+
         See Also
         --------
         get_buffer
@@ -1829,14 +1884,13 @@ class OwnPort(Port):
 
 
 class OwnMidiPort(MidiPort, OwnPort):
-
     """A JACK MIDI port owned by a :class:`Client` object.
 
     This class is derived from :class:`OwnPort` and :class:`MidiPort`,
     which are themselves derived from :class:`Port`.  It has the same
     attributes and methods as :class:`OwnPort`, but :meth:`get_buffer`
     and :meth:`get_array` are disabled.  Instead, it has methods for
-    sending and receiving MIDI events (to be used from within the
+    sending and receiving MIDI events (to be used only from within the
     process callback -- see :meth:`Client.set_process_callback`).
 
     This class cannot be instantiated directly (see :class:`Port`).
@@ -1992,7 +2046,6 @@ class OwnMidiPort(MidiPort, OwnPort):
 
 
 class Ports(object):
-
     """A list of input/output ports.
 
     This class is not meant to be instantiated directly.  It is only
@@ -2084,7 +2137,6 @@ class Ports(object):
 
 
 class RingBuffer(object):
-
     """JACK's lock-free ringbuffer."""
 
     def __init__(self, size):
@@ -2333,7 +2385,6 @@ class RingBuffer(object):
 
 
 class Status(object):
-
     """Representation of the JACK status bits."""
 
     __slots__ = '_code'
@@ -2433,7 +2484,6 @@ class Status(object):
 
 
 class TransportState(object):
-
     """Representation of the JACK transport state.
 
     See Also
@@ -2460,14 +2510,12 @@ class TransportState(object):
 
 
 class JackError(Exception):
-
     """Exception for all kinds of JACK-related errors."""
 
     pass
 
 
 class CallbackExit(Exception):
-
     """To be raised in a callback function to signal failure.
 
     See Also
