@@ -13,7 +13,7 @@ Button:
     config:
       fixed: false # Button with (only push event) or without (support push and long push events) fixation
       args: # Plugin arguments list
-        - 99 # connected GPIO pin (second wire connected to GND)
+        - 225 # connected GPIO pin (second wire connected to GND)
 
 Display:
   - name: RGB8x8Display
@@ -36,7 +36,7 @@ Jack:
 Guitarix:
   - name: guitar1
     rpc_port: 8881 # Port to handle by json-rpc
-    web: 8081 # Web interface port or false to disable
+    web: 8000 # Web interface port or false to disable
     jack: esi-ugm96 # Connect to jackd with this name
     mapping:
       inputs: # Basically you can use "amp", or "fx" to skip amp. Be carefully - "amp" has (0) in and (0) out, fx has (0) in and (0,1) out
@@ -61,5 +61,6 @@ Guitarix:
 Bluetooth:
   - name: OneButton
     dev: hci0 # Bluetooth device name
+    enabled: true # Up & running
     encrypt: true # Encrypt bluetooth link
     visible: true # Visible to device scan
