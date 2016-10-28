@@ -4,6 +4,7 @@
 from sys import stderr, stdout, _getframe
 from time import strftime, time, localtime
 from inspect import stack
+from os.path import basename
 
 # Common using functions:
 def debug(msg):
@@ -41,11 +42,11 @@ def log(level, msg, out=stdout):
 #
 def _logOutVerbose(level, msg):
     log_time = time()
-    stdout.write('[%s.%s %s, line:%03u]:\t %s\n' % (strftime('%H:%M:%S', localtime(log_time)), str(log_time % 1)[2:8], level, _getframe().f_back.f_lineno, '  ' * (len(stack()) - 1) + msg))
+    stdout.write('[%s.%s %s, %s:%03u]:\t %s\n' % (strftime('%H:%M:%S', localtime(log_time)), str(log_time % 1)[2:8], level, basename(_getframe().f_back.f_back.f_globals['__file__']), _getframe().f_back.f_back.f_lineno, '  ' * (len(stack()) - 1) + msg))
 
 def _logErrorVerbose(msg):
     log_time = time()
-    stderr.write('[%s.%s %s, line:%03u]:\t %s\n' % (strftime('%H:%M:%S', localtime(log_time)), str(log_time % 1)[2:8], 'ERROR', _getframe().f_back.f_lineno, '  ' * (len(stack()) - 1) + msg))
+    stderr.write('[%s.%s %s, %s:%03u]:\t %s\n' % (strftime('%H:%M:%S', localtime(log_time)), str(log_time % 1)[2:8], 'ERROR', basename(_getframe().f_back.f_globals['__file__']), _getframe().f_back.f_lineno, '  ' * (len(stack()) - 1) + msg))
     return Exception(msg)
 
 def _logOut(level, msg):
