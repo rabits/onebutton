@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-'''OneButton v0.1
+'''OneButton v0.2
 
 Author:      Rabit <home@rabits.org>
 License:     GPL v3
@@ -12,18 +12,24 @@ Required:    python2.7, python-cffi
 import yaml
 import sys
 import os
-import time
+try:
+    from gi.repository import GObject
+except ImportError:
+    import gobject as GObject
+import dbus.mainloop.glib
 
 import Log as log
 from Display import Display
 from Jack import Jack
 from Guitarix import Guitarix
 from Button import Button
+from Bluetooth import Bluetooth
 
 class OneButton(object):
     """Main application to run onebutton"""
     def __init__(self, config_path):
-        self._running = False
+        self._mainloop = GObject.MainLoop()
+        dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
         self._processes = {}
         self._cfg_path = config_path
         self._loadConfig()
@@ -74,6 +80,7 @@ class OneButton(object):
         self._runProcesses(Display)
         self._runProcesses(Jack)
         self._runProcesses(Guitarix)
+        self._runProcesses(Bluetooth)
         self._runProcesses(Button)
 
         log.info('Initialization done')
@@ -93,18 +100,16 @@ class OneButton(object):
 
     def _run(self):
         log.info('Running...')
-        self._running = True
-        while self._running:
-            try:
-                time.sleep(5)
-            except (KeyboardInterrupt, SystemExit):
-                log.info('Received stop signal')
-                break
-            except:
-                log.error('Abnormal stop...')
-                self.stop()
-                raise
-        self.stop()
+        try:
+            self._mainloop.run()
+        except (KeyboardInterrupt, SystemExit):
+            log.info('Received stop signal')
+        except:
+            log.error('Abnormal stop...')
+            self.stop()
+            raise
+        finally:
+            self.stop()
 
     def run(self):
         try:
@@ -133,14 +138,15 @@ class OneButton(object):
 
     def stop(self):
         log.info("Stopping processes...")
-        self._running = False
+        self._mainloop.quit()
         self._stopProcesses(Button)
+        self._stopProcesses(Bluetooth)
         self._stopProcesses(Guitarix)
         self._stopProcesses(Jack)
         self._stopProcesses(Display)
 
         # Stopping last processes
-        for name in self._processes:
+        for name in self._processes.keys():
             self._stopProcesses(name)
 
 if __name__ == '__main__':

@@ -32,7 +32,7 @@ About display: to show some info about current state you can use number of optio
 * Graphical display
 * Etc...
 
-Managing presets is carried out using Guitarix GUI interface or WEB interface. Later I think about preparing Qt+Bluetooth interface to manage everything with your PC or smartphone.
+Managing presets is carried out using Guitarix GUI interface or WEB interface.
 
 Additional features
 -------------------
@@ -57,6 +57,7 @@ Right now I use the following hardware:
 * Audio:
   * ESI UGM96
   * ESI Maya22
+* USB Bluetooth 4.0 dongle
 * Rainbowduino 8x8 RGB led matrix
 * Momentary soft-touch footswitch
 * 3D printed case
@@ -83,7 +84,16 @@ Installation
 * Go to plugins directory and build required plugins
 * Run `./onebutton config.yaml` and check logs that everything fine
 * Rock & Roll!
-* Optional: copy init script (upstart.conf) to run onebutton on system start
+* Optional: copy init script (upstart.conf, systemd.conf) to run onebutton on system start
+
+Bluetooth
+---------
+You can manage your onebutton by using the OneControl application, but make sure that you're use bluez>=5.40 - dbus bluez profiles working properly with it.
+OneControl you can find here: http://github.com/rabits/onecontrol
+
+Guitarix WEB UI
+---------------
+To manage Guitarix OneButton support webui interface, that placed in guitarix-webui folder. It will be used after Guitarix startup.
 
 TODO
 ----
@@ -111,6 +121,6 @@ TODO
 
 Donation
 --------
-If you great R&R man, you can support my open-source development by a small Bitcoin donation.
+If you are great R&R man, you can support my open-source development by a small Bitcoin donation.
 
 Bitcoin wallet: `15phQNwkVs3fXxvxzBkhuhXA2xoKikPfUy`

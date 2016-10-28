@@ -2,7 +2,6 @@
 
 # Presetup
 sudo apt-get install git jackd2 python-yaml python-bluez python-cffi
-sudo adduser onebutton
 
 # Build guitarix
 wget -O guitarix-0.35.1.tar.xz 'https://sourceforge.net/projects/guitarix/files/guitarix/guitarix2-0.35.1.tar.xz/download'
@@ -15,11 +14,29 @@ sudo ./waf install
 
 # Setup onebutton system
 
+# Add onebutton to audio & dialout groups to use soundcards & ttyUSB devices (displays)
+sudo adduser onebutton
+sudo usermod -aG audio,dialout,bluetooth onebutton
+
 # Sudo access for onebutton user to run button GPIO plugin
 echo "onebutton ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/50-onebutton
 
-# Add onebutton to audio & dialout groups to use soundcards & ttyUSB devices (displays)
-sudo usermod -aG audio,dialout onebutton
+# Sudo access for onebutton user to run button GPIO plugin
+cat - <<EOF | sudo tee /etc/dbus-1/system.d/org.rabits.onebutton.conf
+<?xml version="1.0"?><!--*-nxml-*-->
+<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-BUS Bus Configuration 1.0//EN"
+    "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+
+<!--
+This file is part of OneButton
+-->
+
+<busconfig>
+    <policy group="audio">
+        <allow own_prefix="org.freedesktop.ReserveDevice1"/>
+    </policy>
+</busconfig>
+EOF
 
 # Lowering latencies to usb audio
 echo "options snd-usb-audio nrpacks=1" | sudo tee -a /etc/modprobe.d/alsa-base.conf
@@ -36,3 +53,13 @@ if [ -e /dev/rtc0 ]; then
 
     # Also you need to add next line in /etc/rc.local: "echo 3072 >/sys/class/rtc/rtc0/max_user_freq"
 fi
+
+# Disable graphical boot:
+sudo systemctl set-default multi-user.target
+
+# Check bluez version
+if ! dpkg --compare-versions "$(dpkg -s bluez | grep Version: | cut -d " " -f 2)" '>=' 5.40 ; then
+    echo "WARNING: Bluez version < 5.40 is not supported to use with onecontrol. Please update it asap"
+fi
+
+# If you have issues with your usb connection - try to set dwc_otg.speed=1 and dwc_otg.lpm_enable=0 in kernel cmdline
