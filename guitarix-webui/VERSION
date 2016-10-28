@@ -1,0 +1,3 @@
+0.34.0
++ FIX for document.location.port
++ FIX for localStorage.getItem
