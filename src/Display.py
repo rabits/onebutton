@@ -7,3 +7,7 @@ from Process import Process
 
 class Display(Process):
     """Display controller - interface to show some info"""
+
+    def stop(self):
+        log.info("Stopping '%s'" % self._cfg['name'])
+        Process.stop(self)
