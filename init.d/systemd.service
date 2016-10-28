@@ -1,0 +1,25 @@
+[Unit]
+Description=OneButton guitar processor daemon
+After=systemd-udev-trigger.service network.target
+
+[Service]
+Type=simple
+Restart=always
+TimeoutStopSec=15
+
+KillSignal=SIGINT
+LimitMEMLOCK=infinity
+LimitRTPRIO=infinity
+
+User=onebutton
+Group=onebutton
+WorkingDirectory=/srv/onebutton
+
+Environment="PYTHONPATH=lib:src" 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket'
+
+ExecStart=/usr/bin/python -u src/OneButton.py config.user.yaml
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target
