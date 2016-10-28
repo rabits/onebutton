@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
+from time import sleep
+
 import jack
 
 import Log as log
@@ -30,7 +32,7 @@ class Jack(Process):
         Process.start(self)
 
     def stop(self):
-        self.clientDisconnect()
+        log.info("Stopping '%s'" % self._cfg['name'])
         Process.stop(self)
 
     def _jack_info_log(msg):
@@ -40,20 +42,32 @@ class Jack(Process):
         log.log('ERROR', msg, self._logout)
 
     def _clientConnect(self):
-        log.info("Connecting Jack '%s'" % self._cfg['name'])
+        log.info("Connecting client '%s'" % self._cfg['name'])
         jack.set_error_function(lambda msg: None)
         self._client = jack.Client("onebutton", no_start_server=True, servername=self._cfg['name'])
         jack.set_info_function(self._jack_info_log)
         jack.set_error_function(self._jack_error_log)
+        self._client.activate()
+        self._client.transport_start()
+        for i in (1,2,3,4,5,6,7,8,9,10):
+            log.debug("Jack Status: '%s', Transport: '%s'" % (self._client.status, self._client.transport_state))
+            if self._client.transport_state == jack.ROLLING:
+                break
+            sleep(0.5)
+        if not self._client.transport_state == jack.ROLLING:
+            raise Exception("Status is not ROLLING")
 
-    def clientDisconnect(self):
+    def _clientDisconnect(self):
         if self._client:
-            log.info("Disconnecting Jack '%s'" % self._cfg['name'])
-            self._client.close()
-            jack.set_info_function(None)
-            jack.set_error_function(None)
-            del self._client
-            self._client = None
+            log.info("Disconnecting client '%s'" % self._cfg['name'])
+            try:
+                jack.set_info_function(None)
+                jack.set_error_function(None)
+                self._client.deactivate()
+                self._client.close()
+            except Exception as e:
+                log.error("Unable to gracefully disconnect '%s' client: %s" % (self._cfg['name'], e))
+        Process._clientDisconnect(self)
 
     def getConnections(self, port):
         return self._client.get_all_connections(port)
