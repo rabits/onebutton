@@ -28,7 +28,7 @@ if __name__ == '__main__':
         os.environ['HOME'] = user.pw_dir
 
         pid = open('/run/onebutton.pid', 'w+')
-        logfile = open('/var/log/onebutton.log', 'a', 1)
+        logfile = open('/var/log/onebutton.log', 'a', 0)
 
         log.info("Daemonize with user %s %d" % (user.pw_name, user.pw_uid))
 

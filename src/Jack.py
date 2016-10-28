@@ -35,10 +35,10 @@ class Jack(Process):
         log.info("Stopping '%s'" % self._cfg['name'])
         Process.stop(self)
 
-    def _jack_info_log(msg):
+    def _jack_info_log(self, msg):
         log.log('INFO', msg, self._logout)
 
-    def _jack_error_log(msg):
+    def _jack_error_log(self, msg):
         log.log('ERROR', msg, self._logout)
 
     def _clientConnect(self):

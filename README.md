@@ -84,7 +84,7 @@ Installation
 * Go to plugins directory and build required plugins
 * Run `./onebutton config.yaml` and check logs that everything fine
 * Rock & Roll!
-* Optional: copy init script (upstart.conf, systemd.conf) to run onebutton on system start
+* Optional: copy init script (upstart.conf, systemd.service) to run onebutton on system start
 
 Bluetooth
 ---------
