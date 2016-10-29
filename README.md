@@ -4,7 +4,7 @@ It is portable guitar processor, based on Guitarix, Jackd and Linux.
 
 | BoneButton | TankButton |
 | ---------- | ---------- |
-| <img src="/doc/bonebutton-body-3d.jpg" width="200"> | na |
+| <img src="/doc/bonebutton-body-3d.jpg" width="200"> | <img src="/doc/tankbutton-body-3d.jpg" width="200"> |
 | <img src="/doc/bonebutton-body-live.jpg" width="200"> | na |
 
 Main idea
