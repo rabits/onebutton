@@ -11,8 +11,8 @@ from Module import Module
 
 class Process(Module):
     """Process - common class to run command as subprocess"""
-    def __init__(self, config, logout, logerr, pidpath):
-        Module.__init__(self, config, logout, logerr)
+    def __init__(self, **kwargs):
+        Module.__init__(self, **kwargs)
 
         if not hasattr(self, "_command"):
             self._command = None
@@ -21,7 +21,7 @@ class Process(Module):
         self._process = None
         self._client = None
 
-        self._pidpath = pidpath
+        self._pidpath = kwargs.get('pidpath')
 
         self.start()
 

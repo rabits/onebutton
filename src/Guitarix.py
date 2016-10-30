@@ -28,7 +28,8 @@ class Guitarix(Process):
         self.version()
 
         if self._cfg.get('web'):
-            self._webprocess = GuitarixWeb(self._cfg, self._logout, self._logerr, self._pidpath + '.web.pid')
+            self._webprocess = GuitarixWeb(control = self._control, config = self._cfg,
+                    logout = self._logout, logerr = self._logerr, pidpath = self._pidpath + '.web.pid')
             self._webprocess.wait()
 
     def stop(self):

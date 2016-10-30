@@ -18,8 +18,8 @@ from Module import Module
 class Bluetooth(Module):
     """Bluetooth device controller - manage bluetooth device"""
 
-    def __init__(self, config, logerr, logout, pid):
-        Module.__init__(self, config, logerr, logout)
+    def __init__(self, **kwargs):
+        Module.__init__(self, **kwargs)
 
         self.setState(self._cfg.get('enabled', False))
         self.setDeviceClass("0xAA040B")

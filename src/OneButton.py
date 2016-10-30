@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-'''OneButton v0.3
+'''OneButton v0.3-alpha
 
 Author:      Rabit <home@rabits.org>
 License:     GPL v3
@@ -19,6 +19,7 @@ except ImportError:
 import dbus.mainloop.glib
 
 import Log as log
+from Remote import Remote
 from Display import Display
 from Jack import Jack
 from Guitarix import Guitarix
@@ -65,10 +66,10 @@ class OneButton(object):
         name = Class.__name__
         self._processes[name] = []
         for i, cfg in enumerate(self._cfg.get(name, {})):
-            self._processes[name].append(Class(cfg,
-                open(self._dir['logs']+'/%s_%d.out.log' % (name, i), 'w', 1),
-                open(self._dir['logs']+'/%s_%d.err.log' % (name, i), 'w', 1),
-                self._dir['pids']+'/%s_%d.pid' % (name, i)))
+            self._processes[name].append(Class(control = self, config = cfg,
+                logout = open(self._dir['logs']+'/%s_%d.out.log' % (name, i), 'w', 1),
+                logerr = open(self._dir['logs']+'/%s_%d.err.log' % (name, i), 'w', 1),
+                pidpath = self._dir['pids']+'/%s_%d.pid' % (name, i)))
 
         log.info("Waiting till %s will be started..." % name)
         for proc in self._processes[name]:
@@ -77,6 +78,7 @@ class OneButton(object):
 
     def _init(self):
         log.info('Initializing...')
+        self._runProcesses(Remote)
         self._runProcesses(Display)
         self._runProcesses(Jack)
         self._runProcesses(Guitarix)
@@ -144,10 +146,14 @@ class OneButton(object):
         self._stopProcesses(Guitarix)
         self._stopProcesses(Jack)
         self._stopProcesses(Display)
+        self._stopProcesses(Remote)
 
         # Stopping last processes
         for name in self._processes.keys():
             self._stopProcesses(name)
+
+    def version(self):
+        return __doc__.split()[1][1:]
 
 if __name__ == '__main__':
     if os.geteuid() == 0:

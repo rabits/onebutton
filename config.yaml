@@ -64,3 +64,8 @@ Bluetooth:
     enabled: true # Up & running
     encrypt: true # Encrypt bluetooth link
     visible: true # Visible to device scan
+
+Remote:
+  - name: OneButton
+    address: '' # IP to listen on, default '' - all interfaces
+    port: 9000  # Port to bind
