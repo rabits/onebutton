@@ -1,3 +1,12 @@
 #!/bin/sh
 
+if [ -e button.bin ]; then
+    if [ -z "$(find src -newer button.bin)" ]; then
+        echo "Skip building binary"
+        exit 0
+    fi
+fi
+
+echo "Building binary"
+
 gcc src/button.c -std=c11 -o button.bin -lwiringPi -lpthread

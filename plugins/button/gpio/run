@@ -1,3 +1,5 @@
 #!/bin/sh
 
+[ ! -f build ] || ./build $@
+
 sudo -n -- ./button.bin $@

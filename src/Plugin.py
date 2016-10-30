@@ -15,15 +15,18 @@ class Plugin(Process):
 
         self._init_done = False
         self._process_stdout_thread = None
+        self._plugin_dir = None
 
         if 'path' in config:
-            plugin_runfile = os.path.join(os.path.expanduser(config['plugin_dirpath']), 'run')
+            self._plugin_dir = os.path.expanduser(config['plugin_dirpath'])
         else:
             plugins_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'plugins')
-            plugin_runfile = os.path.join(plugins_dir, self.__class__.__name__.lower(), config['type'], 'run')
+            self._plugin_dir = os.path.join(plugins_dir, self.__class__.__name__.lower(), config['type'])
+
+        plugin_runfile = os.path.join(self._plugin_dir, 'run')
 
         if os.path.exists(plugin_runfile):
-            self._command_cwd = os.path.dirname(plugin_runfile)
+            self._command_cwd = self._plugin_dir
             self._command = [plugin_runfile]
             if 'args' in config['config']:
                 self._command += config['config']['args']

@@ -1,5 +1,14 @@
 #!/bin/sh -e
 
+if [ -e rainbowduino.ino.hex ]; then
+    if [ -z "$(find src -newer rainbowduino.ino.hex)" ]; then
+        echo "Skip building binary"
+        exit 0
+    fi
+fi
+
+echo "Building binary"
+
 VERSION="1.6.9"
 
 ARCH=$(uname -p)
@@ -19,7 +28,7 @@ if [ ! -d "/tmp/${SUBDIR}" ]; then
         aarch64)
             sudo dpkg --add-architecture armhf
             sudo apt-get update
-            sudo apt-get install libc6:armhf zlib1g:armhf libtinfo5:armhf
+            sudo apt-get install -y libc6:armhf zlib1g:armhf libtinfo5:armhf
             wget -O "${ARDUINO_DIR}.tar.xz" "${URL_BEGIN}-linuxarm.tar.xz"
             ;;
         *)
@@ -41,6 +50,7 @@ trap "rm -rf ${OUTPUTDIR}" EXIT
 # Build project
 "${ARDUINO_DIR}/arduino-builder" -compile -logger=machine -hardware "${ARDUINO_DIR}/hardware" -tools "${ARDUINO_DIR}/tools-builder" -tools "${ARDUINO_DIR}/hardware/tools/avr" -built-in-libraries "${ARDUINO_DIR}/libraries" -fqbn=arduino:avr:diecimila:cpu=atmega328 -ide-version=10609 -build-path "${OUTPUTDIR}" -warnings=none -prefs=build.warn_data_percentage=75 -verbose "./src/rainbowduino/rainbowduino.ino"
 
-# Upload to board
-"${ARDUINO_DIR}/hardware/tools/avr/bin/avrdude" "-C${ARDUINO_DIR}/hardware/tools/avr/etc/avrdude.conf" -v -patmega328p -carduino -P/dev/ttyUSB0 -b57600 -D "-Uflash:w:${OUTPUTDIR}/rainbowduino.ino.hex:i"
+mv "${OUTPUTDIR}/rainbowduino.ino.hex" ./
 
+# Upload to board
+"${ARDUINO_DIR}/hardware/tools/avr/bin/avrdude" "-C${ARDUINO_DIR}/hardware/tools/avr/etc/avrdude.conf" -v -patmega328p -carduino -P/dev/ttyUSB0 -b57600 -D "-Uflash:w:rainbowduino.ino.hex:i"

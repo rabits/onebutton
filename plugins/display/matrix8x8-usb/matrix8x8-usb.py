@@ -8,6 +8,7 @@ class Matrix8x8USB(object):
     def __init__(self, tty = '/dev/ttyUSB0', boudrate = 19200):
         self._available_commands = ['clear', 'init', 'tuner', 'symbols']
         self._c = serial.Serial(tty, boudrate, timeout=1.0)
+        # TODO: Automatically build & upload firmware
 
     # Commands:
     def clear(self):
