@@ -12,19 +12,20 @@ class Jack(Process):
     """Jackd audio controller - one per soundcard"""
 
     def start(self):
-        self._command = ['jackd', '--name', self._cfg['name']]
-        if self._cfg['config']['rtpriority']:
+        self._command = ['jackd', '--name', self._cfg.get('name', 'jack')]
+        cfg = self._cfg.get('config', {})
+        if cfg.get('rtpriority', 89):
             self._command += ['--realtime',
-                '--realtime-priority', int(self._cfg['config']['rtpriority'])]
+                '--realtime-priority', int(self._cfg.get('config', {}).get('rtpriority', 89))]
         else:
             self._command += ['--no-realtime']
 
-        if self._cfg['type'] == 'alsa':
+        if self._cfg.get('type', 'alsa') == 'alsa':
             self._command += ['-dalsa',
-                '--device', self._cfg['config']['device'],
-                '--rate', self._cfg['config']['samplerate'],
-                '--period', self._cfg['config']['buffer'],
-                '--nperiods', self._cfg['config']['periods']]
+                '--device', cfg.get('device', 'hw:1'),
+                '--rate', cfg.get('samplerate', 44100),
+                '--period', cfg.get('buffer', 128),
+                '--nperiods', cfg.get('periods', 3)]
 
         jack.set_info_function(self._jack_info_log)
         jack.set_error_function(self._jack_error_log)
@@ -32,7 +33,7 @@ class Jack(Process):
         Process.start(self)
 
     def stop(self):
-        log.info("Stopping '%s'" % self._cfg['name'])
+        log.info("Stopping '%s'" % self._cfg.get('name', 'jack'))
         Process.stop(self)
 
     def _jack_info_log(self, msg):
@@ -42,9 +43,9 @@ class Jack(Process):
         log.log('ERROR', msg, self._logout)
 
     def _clientConnect(self):
-        log.info("Connecting client '%s'" % self._cfg['name'])
+        log.info("Connecting client '%s'" % self._cfg.get('name', 'jack'))
         jack.set_error_function(lambda msg: None)
-        self._client = jack.Client("onebutton", no_start_server=True, servername=self._cfg['name'])
+        self._client = jack.Client("onebutton", no_start_server=True, servername=self._cfg.get('name', 'jack'))
         jack.set_info_function(self._jack_info_log)
         jack.set_error_function(self._jack_error_log)
         self._client.activate()
@@ -59,14 +60,14 @@ class Jack(Process):
 
     def _clientDisconnect(self):
         if self._client:
-            log.info("Disconnecting client '%s'" % self._cfg['name'])
+            log.info("Disconnecting client '%s'" % self._cfg.get('name', 'jack'))
             try:
                 jack.set_info_function(None)
                 jack.set_error_function(None)
                 self._client.deactivate()
                 self._client.close()
             except Exception as e:
-                log.error("Unable to gracefully disconnect '%s' client: %s" % (self._cfg['name'], e))
+                log.error("Unable to gracefully disconnect '%s' client: %s" % (self._cfg.get('name', 'jack'), e))
         Process._clientDisconnect(self)
 
     def getConnections(self, port):

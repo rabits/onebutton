@@ -21,11 +21,11 @@ class Bluetooth(Module):
     def __init__(self, config, logerr, logout, pid):
         Module.__init__(self, config, logerr, logout)
 
-        self.setState(self._cfg['enabled'])
+        self.setState(self._cfg.get('enabled', False))
         self.setDeviceClass("0xAA040B")
-        self.setDeviceName(self._cfg['name'])
-        self.setEncryption(self._cfg['encrypt'])
-        self.setVisibility(self._cfg['visible'])
+        self.setDeviceName(self._cfg.get('name', 'OneButton'))
+        self.setEncryption(self._cfg.get('encrypt', True))
+        self.setVisibility(self._cfg.get('visible', False))
 
         self._bus = dbus.SystemBus()
 
@@ -46,33 +46,33 @@ class Bluetooth(Module):
         return subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=self._logerr).communicate()[0]
 
     def getDeviceAddress(self):
-        log.info("Getting device address '%s'" % self._cfg['dev'])
+        log.info("Getting device address '%s'" % self._cfg.get('dev'))
         out = self._exec(['hcitool', 'dev'])
         olist = out.split()[1:]
-        if len(olist) > 1 and self._cfg['dev'] in olist:
-            return olist[olist.index(self._cfg['dev'])]
+        if len(olist) > 1 and self._cfg.get('dev') in olist:
+            return olist[olist.index(self._cfg.get('dev'))]
         else:
             return None
 
     def setState(self, val):
         log.info("Setting device state to '%s'" % 'up' if val else 'down')
-        self._exec(['sudo', 'hciconfig', self._cfg['dev'], 'up' if val else 'down'])
+        self._exec(['sudo', 'hciconfig', self._cfg.get('dev'), 'up' if val else 'down'])
 
     def setDeviceClass(self, btclass):
         log.info("Setting device class to '%s'" % btclass)
-        self._exec(['sudo', 'hciconfig', self._cfg['dev'], 'class', btclass])
+        self._exec(['sudo', 'hciconfig', self._cfg.get('dev'), 'class', btclass])
 
     def setDeviceName(self, name):
         log.info("Setting device name to '%s'" % name)
-        self._exec(['sudo', 'hciconfig', self._cfg['dev'], 'name', name])
+        self._exec(['sudo', 'hciconfig', self._cfg.get('dev'), 'name', name])
 
     def setEncryption(self, val):
         log.info("Setting device encryption to '%s'" % 'encrypt' if val else 'noencrypt')
-        self._exec(['sudo', 'hciconfig', self._cfg['dev'], 'encrypt' if val else 'noencrypt'])
+        self._exec(['sudo', 'hciconfig', self._cfg.get('dev'), 'encrypt' if val else 'noencrypt'])
 
     def setVisibility(self, visible):
         log.info("Setting device visibility to '%s'" % 'visible' if visible else 'invisible')
-        self._exec(['sudo', 'hciconfig', self._cfg['dev'], 'piscan' if visible else 'pscan'])
+        self._exec(['sudo', 'hciconfig', self._cfg.get('dev'), 'piscan' if visible else 'pscan'])
 
     def registerService(self, host, port, name):
         self._btservice.registerService(host, port, name)

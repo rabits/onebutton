@@ -56,7 +56,7 @@ class Plugin(Process):
             self._process_stdout_thread.daemon = True
             self._process_stdout_thread.start()
         if not self._init_done:
-            raise Exception("Init of plugin %s/%s still not done" % (self.__class__.__name__, self._cfg['type']))
+            raise Exception("Init of plugin %s/%s still not done" % (self.__class__.__name__, self._cfg.get('type', '[unknown plugin type]')))
 
         self._client = True
 

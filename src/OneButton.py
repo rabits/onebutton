@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-'''OneButton v0.2
+'''OneButton v0.3
 
 Author:      Rabit <home@rabits.org>
 License:     GPL v3
@@ -49,14 +49,14 @@ class OneButton(object):
 
     def _checkConfig(self):
         self._dir = {}
-        for key in self._cfg['global']['dir']:
-            self._dir[key] = os.path.abspath(os.path.expanduser(self._cfg['global']['dir'][key]))
+        for key in self._cfg.get('global', {}).get('dir', {}):
+            self._dir[key] = os.path.abspath(os.path.expanduser(self._cfg.get('global')['dir'][key]))
             if not os.path.isdir(self._dir[key]):
                 log.info("Make directory '%s'" % self._dir[key])
                 os.makedirs(self._dir[key])
-        if 'verbose' in self._cfg['global']['log']:
-            log.logSetVerbose(self._cfg['global']['log']['verbose'])
-            log.info("Set verbose mode to %s" % self._cfg['global']['log']['verbose'])
+        if 'verbose' in self._cfg.get('global', {}).get('log', {}):
+            log.logSetVerbose(self._cfg.get('global')['log']['verbose'])
+            log.info("Set verbose mode to %s" % self._cfg.get('global')['log']['verbose'])
 
     def saveConfig(self):
         pass
@@ -64,7 +64,7 @@ class OneButton(object):
     def _runProcesses(self, Class):
         name = Class.__name__
         self._processes[name] = []
-        for i, cfg in enumerate(self._cfg[name]):
+        for i, cfg in enumerate(self._cfg.get(name, {})):
             self._processes[name].append(Class(cfg,
                 open(self._dir['logs']+'/%s_%d.out.log' % (name, i), 'w', 1),
                 open(self._dir['logs']+'/%s_%d.err.log' % (name, i), 'w', 1),

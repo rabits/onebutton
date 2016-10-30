@@ -143,4 +143,4 @@ class Process(Module):
             log.warn("%s process not present" % (self.__class__.__name__))
 
     def name(self):
-        return self._cfg['name']
+        return self._cfg.get('name', '[unknown process]')

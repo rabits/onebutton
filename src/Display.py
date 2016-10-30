@@ -9,5 +9,5 @@ class Display(Process):
     """Display controller - interface to show some info"""
 
     def stop(self):
-        log.info("Stopping '%s'" % self._cfg['name'])
+        log.info("Stopping '%s'" % self._cfg.get('name', '[unknown Display]'))
         Process.stop(self)

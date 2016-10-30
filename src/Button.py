@@ -29,5 +29,5 @@ class Button(Plugin):
                         self._temp_jack.triggerBypass()
 
     def stop(self):
-        log.info("Stopping '%s'" % self._cfg['name'])
+        log.info("Stopping '%s'" % self._cfg.get('name', '[unknown Button]'))
         Plugin.stop(self)
