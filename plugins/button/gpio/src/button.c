@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if( wiringPiSetupGpio() < 0 ) {
+    if( wiringPiSetup() < 0 ) {
         printf("{\"type\":\"error\", \"msg\":\"Unable to setup wiringPi\"}\n");
         return 1;
     }

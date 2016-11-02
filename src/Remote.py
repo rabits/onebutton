@@ -70,9 +70,16 @@ class Remote(Module):
         return self._exec(['sudo', 'reboot'])
 
     @jsonrpc('onebutton')
-    def upgrade(self):
+    def upgrade(self, version = None):
         log.info("Remote: upgrade")
-        return 'TODO: upgrade'
+        # TODO: command to upgarade
+        return version
+
+    @jsonrpc('onebutton')
+    def versions(self):
+        log.info("Remote: versions")
+        # TODO: command to check available versions
+        return ['0.1-alpha', '0.2-alpha', '0.3-alpha']
 
     @jsonrpc('onebutton')
     def restart(self):

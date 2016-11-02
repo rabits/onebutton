@@ -237,24 +237,25 @@ class BTHandler:
 
     def removeServerSocket(self, cid):
         log.debug("BTHandler: %d removing server socket %d" % (self._hid, cid))
-        self._servers[cid].close()
-        del self._servers[cid]
+        if self._servers.get(cid):
+            self._servers.get(cid).close()
+            del self._servers[cid]
 
     def _getServerSocket(self, cid, itype):
-        if not self._servers.has_key(cid):
+        if not self._servers.get(cid):
             raise log.error("BTHandler: %d unable to find server connection %d" % (self._hid, cid))
-        self._servers[cid].setType(itype)
-        return self._servers[cid]
+        self._servers.get(cid).setType(itype)
+        return self._servers.get(cid)
 
     def _setServerSocket(self, version, cid, service_id):
         # TODO: service remove/change processing
         service = self._btservice.getService(service_id)
-        if not self._servers.has_key(cid):
-            self._servers[cid] = ServerSocket(self, service, version, cid)
+        if self._servers.get(cid):
+            self._servers.get(cid).setService(service)
         else:
-            self._servers[cid].setService(service)
+            self._servers[cid] = ServerSocket(self, service, version, cid)
 
-        return self._servers[cid]
+        return self._servers.get(cid)
 
     def _serverIn(self, itype, cid, server_socket):
         #log.debug("BTHandler: %d server->client %d" % (self._hid, cid))
