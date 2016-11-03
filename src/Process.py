@@ -24,6 +24,7 @@ class Process(Module):
             self._command_cwd = None
         self._process = None
         self._client = None
+        self._timer_processcheck = None
 
         self._pidpath = kwargs.get('pidpath')
 
@@ -47,7 +48,6 @@ class Process(Module):
             self._timer_processcheck = GObject.timeout_add(500, self._processCheckRestart)
         else:
             log.warn("Unable to exec command '%s' to start process %s" % (self._command, self.__class__.__name__))
-            self._timer_processcheck = None
 
     def _processCheck(self):
         if self._process:
@@ -74,6 +74,7 @@ class Process(Module):
     def stop(self):
         if self._timer_processcheck:
             GObject.source_remove(self._timer_processcheck)
+            self._timer_processcheck = None
         if self._process:
             log.info("Stopping %s instance" % self.__class__.__name__)
             self._clientDisconnect()
