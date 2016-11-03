@@ -78,8 +78,12 @@ class OneButton(object):
 
     def _init(self):
         log.info('Initializing...')
+
+        # TODO: Rewrite ugly test diplay system
+        self._display = Display()
+        self._display.init()
+
         self._runProcesses(Remote)
-        self._runProcesses(Display)
         self._runProcesses(Jack)
         self._runProcesses(Guitarix)
         self._runProcesses(Bluetooth)
@@ -102,6 +106,7 @@ class OneButton(object):
 
     def _run(self):
         log.info('Running...')
+        self._display.symbols("Rock & Roll", b"\xff\x00\x00")
         try:
             self._mainloop.run()
         except (KeyboardInterrupt, SystemExit):
@@ -111,7 +116,7 @@ class OneButton(object):
             self.stop()
             raise
         finally:
-            self.stop()
+            self._stop()
 
     def run(self):
         try:
@@ -119,7 +124,7 @@ class OneButton(object):
             self._setup()
         except:
             log.error('Something went wrong...')
-            self.stop()
+            self._stop()
             raise
 
         self._run()
@@ -140,17 +145,25 @@ class OneButton(object):
 
     def stop(self):
         log.info("Stopping processes...")
+        self._display.symbols("Quit...", b"\xff\x00\x00")
         self._mainloop.quit()
+
+    def _stop(self):
         self._stopProcesses(Button)
+        self._display.symbols("Quit...", b"\xdd\x00\x00")
         self._stopProcesses(Bluetooth)
+        self._display.symbols("Quit...", b"\xaa\x00\x00")
         self._stopProcesses(Guitarix)
+        self._display.symbols("Quit...", b"\x88\x00\x00")
         self._stopProcesses(Jack)
-        self._stopProcesses(Display)
+        self._display.symbols("Quit...", b"\x66\x00\x00")
         self._stopProcesses(Remote)
+        self._display.symbols("Quit...", b"\x44\x00\x00")
 
         # Stopping last processes
         for name in self._processes.keys():
             self._stopProcesses(name)
+        self._display.symbols("Quit...", b"\x22\x00\x00")
 
     def version(self):
         return __doc__.split()[1][1:]
