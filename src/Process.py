@@ -70,6 +70,8 @@ class Process(Module):
             log.error("Process %s exited, I need to restart it" % self.__class__.__name__)
             self.stop()
             self.start()
+        else:
+            self._timer_processcheck = GObject.timeout_add(500, self._processCheckRestart)
 
     def stop(self):
         if self._timer_processcheck:
