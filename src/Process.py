@@ -5,12 +5,16 @@ from subprocess import Popen, PIPE
 from time import sleep
 import os
 from signal import SIGTERM, SIGKILL
+try:
+    from gi.repository import GObject
+except ImportError:
+    import gobject as GObject
 
 import Log as log
 from Module import Module
 
 class Process(Module):
-    """Process - common class to run command as subprocess"""
+    """Process - common class to run command as continuous subprocess"""
     def __init__(self, **kwargs):
         Module.__init__(self, **kwargs)
 
@@ -39,8 +43,11 @@ class Process(Module):
                     cwd=self._command_cwd)
             with open(self._pidpath, 'w') as f:
                 f.write(str(self._process.pid))
+
+            self._timer_processcheck = GObject.timeout_add(500, self._processCheckRestart)
         else:
             log.warn("Unable to exec command '%s' to start process %s" % (self._command, self.__class__.__name__))
+            self._timer_processcheck = None
 
     def _processCheck(self):
         if self._process:
@@ -53,12 +60,20 @@ class Process(Module):
                     log.debug("  process %d terminated by signal %d" % (self._process.pid, -self._process.returncode))
                 return False
         else:
-            log.error("Unable to check process status for %s - process not started" % self.__class__.__name__)
+            log.error("Unable to check process status for %s - process is not started" % self.__class__.__name__)
             return False
 
         return True
 
+    def _processCheckRestart(self):
+        if not self._processCheck():
+            log.error("Process %s exited, I need to restart it" % self.__class__.__name__)
+            self.stop()
+            self.start()
+
     def stop(self):
+        if self._timer_processcheck:
+            GObject.source_remove(self._timer_processcheck)
         if self._process:
             log.info("Stopping %s instance" % self.__class__.__name__)
             self._clientDisconnect()
