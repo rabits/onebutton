@@ -80,8 +80,11 @@ class OneButton(object):
         log.info('Initializing...')
 
         # TODO: Rewrite ugly test display system
-        self._display = Display()
-        self._display.symbols("Init", b"\xff\x00\x00")
+        try:
+            self._display = Display()
+            self._display.symbols("Init", b"\xff\x00\x00")
+        except:
+            log.error("Unable to setup display")
 
         self._runProcesses(Remote)
         self._runProcesses(Jack)
@@ -106,7 +109,10 @@ class OneButton(object):
 
     def _run(self):
         log.info('Running...')
-        self._display.symbols(self._cfg.get('global', {}).get('display_msg', 'Rock & Roll'), b"\xff\x00\x00")
+        try:
+            self._display.symbols(self._cfg.get('global', {}).get('display_msg', 'Rock & Roll'), b"\xff\x00\x00")
+        except:
+            pass
         try:
             self._mainloop.run()
         except (KeyboardInterrupt, SystemExit):
@@ -148,7 +154,10 @@ class OneButton(object):
         self._mainloop.quit()
 
     def _stop(self):
-        self._display.symbols("Quit", b"\xff\x00\x00")
+        try:
+            self._display.symbols("Quit", b"\xff\x00\x00")
+        except:
+            pass
         self._stopProcesses(Button)
         self._stopProcesses(Bluetooth)
         self._stopProcesses(Guitarix)
